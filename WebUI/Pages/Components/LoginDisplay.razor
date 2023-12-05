@@ -1,0 +1,19 @@
+﻿<AuthorizeView>
+    <Authorized>
+        @context.User.Identity?.Name
+        <MudButton Variant="Variant.Text" 
+                   StartIcon="@Icons.Material.Filled.Logout"
+                   IconColor="Color.Dark"
+                   Href="MicrosoftIdentity/Account/SignOut"
+                   Class="ms-2">
+            <MudText Color="Color.Dark">Logout</MudText>
+        </MudButton>
+    </Authorized>
+    <NotAuthorized>
+        <MudIconButton Edge="Edge.Start"
+                       Icon="@Icons.Material.Filled.Login"
+                       Href="MicrosoftIdentity/Account/SignIn">
+            <MudText Color="Color.Dark">Login</MudText>
+        </MudIconButton>
+    </NotAuthorized>
+</AuthorizeView>

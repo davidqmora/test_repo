@@ -1,0 +1,28 @@
+<MudThemeProvider Theme="myRadar"/>
+
+@code {
+
+    readonly MudTheme myRadar = new()
+    {
+        Palette = new PaletteLight
+        {
+            Primary = "#431d49",
+            Secondary = "#ef4e23",
+            Tertiary = "#bdcfd0",
+            Dark = "#ffffff",
+            
+            TextPrimary = "#151515",
+            TextSecondary = "8b8b8b",
+            
+            AppbarBackground = "#9f1d51"
+        },
+        Typography = new Typography
+        {
+            Default = new Default
+            {
+                FontFamily = new [] { "Monserrat", "Roboto", "sans-serif" }
+            }
+        }
+    };
+    
+}

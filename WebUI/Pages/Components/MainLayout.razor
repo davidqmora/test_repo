@@ -1,0 +1,51 @@
+﻿@using MudBlazor.Utilities
+@inherits LayoutComponentBase
+
+<MyRadarTheme/>
+<MudDialogProvider/>
+<MudSnackbarProvider/>
+
+<MudLayout>
+    @* z-index must be unset to let the Jira collector show, since it is
+       rendered at the Layout level and falls under the app bar.  *@
+    <MudAppBar Elevation="0" Style="z-index: unset !important;">
+        <MudText Typo="Typo.h4">Lamarr</MudText>
+        <AuthorizedNavMenu/>
+        <MudSpacer/>
+        <LoginDisplay/>
+    </MudAppBar>
+    <AuthorizeView>
+        <Authorized>
+            <MudMainContent>
+                @Body
+            </MudMainContent>
+        </Authorized>
+        <NotAuthorized>
+            <MudMainContent>
+                <MudCard>
+                    <MudCardContent>
+                        <MudText>
+                            Authorized access required
+                        </MudText>
+                        <MudText>
+                            This application requires authorized access. Please login to continue.
+                        </MudText>
+                    </MudCardContent>
+                </MudCard>
+            </MudMainContent>
+        </NotAuthorized>
+    </AuthorizeView>
+</MudLayout>
+
+
+@inject ISnackbar Snackbar
+
+@code {
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Snackbar.Configuration.PositionClass = Defaults.Classes.Position.BottomLeft;
+    }
+
+}

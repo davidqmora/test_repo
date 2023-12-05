@@ -1,0 +1,22 @@
+@page "/"
+@inject NavigationManager Navigation
+
+<AuthorizeView>
+    <Authorized>
+        <MudText Typo="Typo.h1">Lamarr</MudText>
+    </Authorized>
+    <NotAuthorized>
+        <MudMainContent>
+            <MudCard>
+                <MudCardContent>
+                    <MudText>
+                        Authorized access required
+                    </MudText>
+                    <MudText>
+                        This application requires authorized access. If you feel you should be able to see the content, please reach out to Cloud Services Team (Slack: #cloud-services) for assistance.
+                    </MudText>
+                </MudCardContent>
+            </MudCard>
+        </MudMainContent>
+    </NotAuthorized>
+</AuthorizeView>

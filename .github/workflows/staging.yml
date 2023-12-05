@@ -1,0 +1,53 @@
+# Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
+# More GitHub Actions for Azure: https://github.com/Azure/actions
+
+name: Lamarr WebUI Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+
+env:
+  AZURE_WEBAPP_PACKAGE_PATH: '.' # set this to the path to your web app project, defaults to the repository root
+  DOTNET_VERSION: '8.0.x' # set this to the dotnet version to use
+
+jobs:
+  build:
+    runs-on: windows-2022
+    environment: Cloud Services - Azure Functions Environment
+    steps:
+      - name: 'Checkout GitHub Action'
+        uses: actions/checkout@v4
+
+      - name: Setup DotNet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: ${{ env.DOTNET_VERSION }}
+
+      - name: Remove existing entry from NuGet config
+        run: dotnet nuget remove source 'DevOps Feed' --configfile nuget.config
+
+      - name: Auth NuGet
+        run: dotnet nuget add source https://pkgs.dev.azure.com/acmeaom/_packaging/acmeaom/nuget/v3/index.json -n 'DevOps Feed' -u az -p ${{ secrets.AZURE_DEVOPS_TOKEN }} --configfile nuget.config
+
+      - name: Restore NuGet Packages
+        run: dotnet restore
+    
+      - name: 'Build Solution'
+        shell: pwsh
+        run: |
+          pushd './${{ env.AZURE_WEBAPP_PACKAGE_PATH }}'
+          dotnet build --configuration Release
+          dotnet publish -c Release -o '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp'
+          popd
+
+      - name: 'Deploy Azure Webb App'
+        uses: Azure/webapps-deploy@v2
+        id: deploy-webapp
+        with:
+          app-name: 'acmelamarrwebui-wus2'
+          slot-name: 'staging'
+          package: '${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/myapp'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}

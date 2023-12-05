@@ -1,0 +1,15 @@
+<MudPopover Open="Show"
+            AnchorOrigin="Origin.TopRight"
+            TransformOrigin="Origin.TopRight"
+            Elevation="0"
+            Paper="false">
+    <MudProgressCircular Indeterminate="true"
+                         Size="Size.Small"
+                         Color="Color.Secondary"
+                         StrokeWidth="4"/>
+</MudPopover>
+
+@code {
+    [Parameter]
+    public bool Show { get; set;  }
+}
