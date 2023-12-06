@@ -39,7 +39,6 @@
   <ItemGroup>
     <AdditionalFiles Include="Pages\Components\LoginDisplay.razor" />
     <AdditionalFiles Include="Pages\Components\MainLayout.razor" />
-    <AdditionalFiles Include="Pages\Grants.razor" />
   </ItemGroup>
 
 

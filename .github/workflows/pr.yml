@@ -1,7 +1,7 @@
 # Docs for the Azure Web Apps Deploy action: https://github.com/azure/functions-action
 # More GitHub Actions for Azure: https://github.com/Azure/actions
 
-name: Prometheon WebUI PR Test Build
+name: Lamarr WebUI PR Test Build
 
 on:
   pull_request:
