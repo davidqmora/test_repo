@@ -18,9 +18,9 @@ WebApplication BuildApp(string[] args)
     var services = builder.Services;
     var configuration = builder.Configuration;
 
-    services.AddDistributedMemoryCache();
     services.AddMicrosoftIdentityWebAppAuthentication(configuration, Constants.AzureAdB2C)
         .EnableTokenAcquisitionToCallDownstreamApi(new[] { configuration["AuthorizePhotoshare:ApiScope"]! })
+        .AddMicrosoftGraph(configuration.GetSection("Graph"))
         .AddInMemoryTokenCaches();
     
     services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
