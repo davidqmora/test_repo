@@ -1,12 +1,19 @@
 @page "/"
 @using WebUI.Services
 
-@inject NavigationManager Navigation
-
 <AuthorizeView>
     <Authorized>
-        <MudText Typo="Typo.h1">Lamarr</MudText>
-        <MudButton OnClick="@GetPhotos">Get Photos</MudButton>
+        <MudButton Variant="Variant.Outlined"
+                   OnClick="@GetPhotos">
+            Get Photos
+        </MudButton>
+        <MudPaper MaxHeight="300px"
+                  Class="overflow-scroll">
+            @foreach (var message in Messages)
+            {
+                <MudText>@message</MudText>
+            }
+        </MudPaper>
     </Authorized>
     <NotAuthorized>
         <MudMainContent>
@@ -16,7 +23,8 @@
                         Authorized access required
                     </MudText>
                     <MudText>
-                        This application requires authorized access. If you feel you should be able to see the content, please reach out to Cloud Services Team (Slack: #cloud-services) for assistance.
+                        This application requires authorized access. If you feel you should be able to see the content, 
+                        please reach out to Cloud Services Team (Slack: #cloud-services) for assistance.
                     </MudText>
                 </MudCardContent>
             </MudCard>
@@ -29,12 +37,16 @@
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 @inject IPhotoShareService PhotoShareService
 @code {
+    private List<string> Messages { get; } = [];
+    
+    
     private async Task GetPhotos()
     {
         try
         {
             var response = await PhotoShareService.GetPhotos(CancellationToken.None);
-            Console.WriteLine(response);
+            Messages.Add($"GetPhotos: {response}");
+            StateHasChanged();
         }
         catch (Exception e)
         {
