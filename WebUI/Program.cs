@@ -1,11 +1,12 @@
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using MudBlazor.Services;
-using MyRadar.Products;
 using NLog;
 using NLog.Web;
-using WebUI;
+using WebUI.Services;
 
 WebApplication BuildApp(string[] args)
 {
@@ -17,9 +18,11 @@ WebApplication BuildApp(string[] args)
     var services = builder.Services;
     var configuration = builder.Configuration;
 
-    services.AddAuthentication(OpenIdConnectDefaults.AuthenticationScheme)
-        .AddMicrosoftIdentityWebApp(configuration.GetSection("AzureAd"));
-
+    services.AddDistributedMemoryCache();
+    services.AddMicrosoftIdentityWebAppAuthentication(configuration, Constants.AzureAdB2C)
+        .EnableTokenAcquisitionToCallDownstreamApi(new[] { configuration["AuthorizePhotoshare:ApiScope"]! })
+        .AddInMemoryTokenCaches();
+    
     services.Configure<OpenIdConnectOptions>(OpenIdConnectDefaults.AuthenticationScheme, options =>
     {
         options.Events.OnSignedOutCallbackRedirect = context =>
@@ -29,20 +32,29 @@ WebApplication BuildApp(string[] args)
             return Task.CompletedTask;
         };
     });
-    
-    services.AddControllersWithViews()
+    services.Configure<OpenIdConnectOptions>(configuration.GetSection("AzureAdB2C"));
+
+    services.AddControllersWithViews(options =>
+        {
+            var policy = new AuthorizationPolicyBuilder()
+                .RequireAuthenticatedUser()
+                .Build();
+            options.Filters.Add(new AuthorizeFilter(policy));
+        })
         .AddMicrosoftIdentityUI();
-    
+
     services.AddRazorPages();
     services.AddServerSideBlazor()
         .AddMicrosoftIdentityConsentHandler();
 
-    builder.Services.AddMudServices();
+    services.AddMudServices();
 
     services.AddApplicationInsightsTelemetry();
 
-    services.AddProductServices(configuration.GetSection("TableStorage") );
+    services.AddPhotoShareService(configuration);
 
+    services.AddOptions();
+    
     return builder.Build();
 }
 

@@ -1,9 +1,12 @@
 @page "/"
+@using WebUI.Services
+
 @inject NavigationManager Navigation
 
 <AuthorizeView>
     <Authorized>
         <MudText Typo="Typo.h1">Lamarr</MudText>
+        <MudButton OnClick="@GetPhotos">Get Photos</MudButton>
     </Authorized>
     <NotAuthorized>
         <MudMainContent>
@@ -20,3 +23,22 @@
         </MudMainContent>
     </NotAuthorized>
 </AuthorizeView>
+
+
+@using Microsoft.Identity.Web
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+@inject IPhotoShareService PhotoShareService
+@code {
+    private async Task GetPhotos()
+    {
+        try
+        {
+            var response = await PhotoShareService.GetPhotos(CancellationToken.None);
+            Console.WriteLine(response);
+        }
+        catch (Exception e)
+        {
+            ConsentHandler.HandleException(e);
+        }
+    }
+}
