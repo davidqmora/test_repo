@@ -17,10 +17,24 @@ public class PhotoShareService(ITokenAcquisition acquisition, IConfiguration con
         return response;
     }
     
-    public async Task<HttpResponseMessage> GetPhotos(CancellationToken cancellationToken)
+    public async Task<HttpResponseMessage> GetMyPhotos(CancellationToken cancellationToken)
     {
         await InitializeClient();
-        var response = await client.GetAsync($"{apiBaseAddress}/v1/photoshare/photos", cancellationToken);
+        var response = await client.GetAsync($"{apiBaseAddress}/v1/photoshare/my-ids", cancellationToken);
+        return response;
+    }
+
+    public async Task<HttpResponseMessage> GetMyMarkers(CancellationToken cancellationToken)
+    {
+        await InitializeClient();
+        var response = await client.GetAsync($"{apiBaseAddress}/v1/photoshare/my-markers", cancellationToken);
+        return response;
+    }
+
+    public async Task<HttpResponseMessage> GetMyVoteForPhoto(string photoId, CancellationToken none)
+    {
+        await InitializeClient();
+        var response = await client.GetAsync($"{apiBaseAddress}/v1/photoshare/{photoId}/my-vote", none);
         return response;
     }
 
@@ -28,7 +42,9 @@ public class PhotoShareService(ITokenAcquisition acquisition, IConfiguration con
     {
         var scopes = new[] { apiScope };
         var accessToken = await acquisition.GetAccessTokenForUserAsync(scopes);
+        
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("LamarrUI", "1.0"));
     }
 }
