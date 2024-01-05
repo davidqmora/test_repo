@@ -16,12 +16,20 @@
                 Get My Photo Markers
             </MudButton>
             <MudButton Variant="Variant.Filled"
-                       OnClick="@GetMyVoteForPic">
+                       OnClick="@GetMyVoteForPhoto">
                 Get My Vote For Photo
             </MudButton>
-            <MudButton Variant="Variant.Filled">
-                Edit My Profile
+            <MudButton Variant="Variant.Filled"
+                       OnClick="@GetCommentsForPhoto">
+                Get Comments For Photo
             </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       OnClick="@GetDataForPhoto">
+                Get Photo Data
+            </MudButton>
+            @* <MudButton Variant="Variant.Filled"> *@
+            @*     Edit My Profile *@
+            @* </MudButton> *@
         </MudStack>
         <MudPaper MaxHeight="300px"
                   Class="overflow-scroll">
@@ -50,6 +58,8 @@
 
 
 @using Microsoft.Identity.Web
+@using WebUI.Model
+@using System.Text.Json
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 @inject IPhotoShareService PhotoShareService
 
@@ -72,7 +82,7 @@
         }
     }
 
-    private async Task GetMyVoteForPic()
+    private async Task GetMyVoteForPhoto()
     {
         try
         {
@@ -96,6 +106,81 @@
             var markers = await response.Content.ReadAsStringAsync();
             Messages.Add($"GetMyMarkers ({response.StatusCode}): {markers}");
             StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            ConsentHandler.HandleException(e);
+        }
+    }
+
+    private async Task GetCommentsForPhoto()
+    {
+        try
+        {
+            const string photoId = "2SGMuntHXOHJBtn0n0Ejt,EmF4dgI9DRJIQ8VMKN8bi";
+            var response = await PhotoShareService.GetCommentsForPhoto(photoId, CancellationToken.None);
+            Messages.Add($"GetComments ({response.StatusCode}): ");
+            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                StateHasChanged();
+                return;
+            }
+
+            var comments = await response.Content.ReadFromJsonAsync<List<PhotoComment>>();
+            if (comments != null)
+            {
+                if (comments.Count == 0)
+                {
+                    Messages.Add("  No comments");
+                }
+                else
+                {
+                    foreach (var comment in comments)
+                    {
+                        Messages.Add($"  {comment.DisplayName}: {comment.Message}");
+                    }
+                }
+            }
+
+            StateHasChanged();
+        }
+        catch (JsonException e)
+        {
+            Messages.Add("Unable to parse response");
+        }
+        catch (Exception e)
+        {
+            ConsentHandler.HandleException(e);
+        }
+    }
+
+    private async Task GetDataForPhoto()
+    {
+        try
+        {
+            // const string photoId = "2SGMuntHXOHJBtn0n0Ejt,EmF4dgI9DRJIQ8VMKN8bi";
+            const string photoId = "003hEGOBTv";
+            var response = await PhotoShareService.GetDataForPhoto(photoId, CancellationToken.None);
+            Messages.Add($"GetData ({response.StatusCode}): ");
+            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                StateHasChanged();
+                return;
+            }
+
+            var data = await response.Content.ReadFromJsonAsync<PhotoData>();
+            // if (data != null)
+            // {
+            //     Messages.Add($"  {comment.DisplayName}: {comment.Message}");
+            // }
+            var dataRaw = await response.Content.ReadAsStringAsync();
+            Messages.Add($"  {dataRaw}");
+
+            StateHasChanged();
+        }
+        catch (JsonException e)
+        {
+            Messages.Add("Unable to parse response");
         }
         catch (Exception e)
         {

@@ -13,29 +13,41 @@ public class PhotoShareService(ITokenAcquisition acquisition, IConfiguration con
     public async Task<HttpResponseMessage> Authorize(CancellationToken cancellationToken)
     {
         await InitializeClient();
-        var response = await client.GetAsync($"{apiBaseAddress}/v1/photoshare/authorize", cancellationToken);
+        var response = await client.GetAsync($"{apiBaseAddress}/v3/photoshare/authorize", cancellationToken);
         return response;
     }
     
     public async Task<HttpResponseMessage> GetMyPhotos(CancellationToken cancellationToken)
     {
         await InitializeClient();
-        var response = await client.GetAsync($"{apiBaseAddress}/v1/photoshare/my-ids", cancellationToken);
+        var response = await client.GetAsync($"{apiBaseAddress}/v3/photoshare/my-ids", cancellationToken);
         return response;
     }
 
     public async Task<HttpResponseMessage> GetMyMarkers(CancellationToken cancellationToken)
     {
         await InitializeClient();
-        var response = await client.GetAsync($"{apiBaseAddress}/v1/photoshare/my-markers", cancellationToken);
+        var response = await client.GetAsync($"{apiBaseAddress}/v3/photoshare/my-markers", cancellationToken);
         return response;
     }
 
-    public async Task<HttpResponseMessage> GetMyVoteForPhoto(string photoId, CancellationToken none)
+    public async Task<HttpResponseMessage> GetMyVoteForPhoto(string photoId, CancellationToken cancellationToken)
     {
         await InitializeClient();
-        var response = await client.GetAsync($"{apiBaseAddress}/v1/photoshare/{photoId}/my-vote", none);
+        var response = await client.GetAsync($"{apiBaseAddress}/v3/photoshare/{photoId}/my-vote", cancellationToken);
         return response;
+    }
+
+    public async Task<HttpResponseMessage> GetCommentsForPhoto(string photoId, CancellationToken cancellationToken)
+    {
+        await InitializeClient();
+        return await client.GetAsync($"{apiBaseAddress}/v3/photoshare/{photoId}/comments", cancellationToken);
+    }
+
+    public async Task<HttpResponseMessage> GetDataForPhoto(string photoId, CancellationToken cancellationToken)
+    {
+        await InitializeClient();
+        return await client.GetAsync($"{apiBaseAddress}/v3/photoshare/{photoId}/data", cancellationToken);
     }
 
     private async Task InitializeClient()
@@ -46,5 +58,6 @@ public class PhotoShareService(ITokenAcquisition acquisition, IConfiguration con
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("LamarrUI", "1.0"));
+        client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Windows", "1234567890"));
     }
 }
