@@ -20,6 +20,7 @@
     <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="2.16.1" />
     <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.16.1" />
     <PackageReference Include="MudBlazor" Version="6.14.0" />
+    <PackageReference Include="MyRadar.Accounts" Version="6.0.18" />
     <PackageReference Include="MyRadar.Common.Blobs" Version="6.1.3" />
     <PackageReference Include="MyRadar.Common.Faults" Version="6.1.3" />
     <PackageReference Include="MyRadar.Common.Media" Version="6.1.3" />
