@@ -13,7 +13,11 @@ WebApplication BuildApp(string[] args)
     var builder = WebApplication.CreateBuilder(args);
 
     builder.Logging.ClearProviders();
-    builder.Host.UseNLog();
+    builder.Host.UseNLog(new NLogAspNetCoreOptions
+    {
+        LoggingConfigurationSectionName = "NLog",
+        RemoveLoggerFactoryFilter = true
+    });
 
     var services = builder.Services;
     var configuration = builder.Configuration;
@@ -33,7 +37,7 @@ WebApplication BuildApp(string[] args)
         };
     });
     services.Configure<OpenIdConnectOptions>(configuration.GetSection("AzureAdB2C"));
-
+    
     services.AddControllersWithViews(options =>
         {
             var policy = new AuthorizationPolicyBuilder()
@@ -51,6 +55,7 @@ WebApplication BuildApp(string[] args)
 
     services.AddApplicationInsightsTelemetry();
 
+    services.AddAccountServices(configuration);
     services.AddPhotoShareService(configuration);
 
     services.AddOptions();
@@ -83,7 +88,9 @@ void RunApp(WebApplication application)
 }
 
 
-var logger = LogManager.Setup().LoadConfigurationFromAppSettings().GetCurrentClassLogger();
+var logger = LogManager.Setup()
+    .LoadConfigurationFromAppSettings()
+    .GetCurrentClassLogger();
 try
 {
     var app = BuildApp(args);
