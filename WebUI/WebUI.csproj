@@ -10,23 +10,22 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="CsvHelper" Version="30.0.1" />
+    <PackageReference Include="CsvHelper" Version="30.0.3" />
     <PackageReference Include="EmailValidation" Version="1.0.10" />
-    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.21.0" />
-    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.0" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.0" NoWarn="NU1605" />
-    <PackageReference Include="Microsoft.Identity.Web" Version="2.16.0" />
-    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="2.16.0" />
-    <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.16.0" />
-    <PackageReference Include="MudBlazor" Version="6.11.1" />
-    <PackageReference Include="MyRadar.Common.Blobs" Version="6.0.55" />
-    <PackageReference Include="MyRadar.Common.Faults" Version="6.0.55" />
-    <PackageReference Include="MyRadar.Common.Media" Version="6.0.55" />
-    <PackageReference Include="MyRadar.Products" Version="6.0.21" />
-    <PackageReference Include="NLog" Version="5.2.7" />
+    <PackageReference Include="Microsoft.ApplicationInsights" Version="2.22.0" />
+    <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.22.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.1" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.OpenIdConnect" Version="8.0.1" NoWarn="NU1605" />
+    <PackageReference Include="Microsoft.Identity.Web" Version="2.16.1" />
+    <PackageReference Include="Microsoft.Identity.Web.MicrosoftGraph" Version="2.16.1" />
+    <PackageReference Include="Microsoft.Identity.Web.UI" Version="2.16.1" />
+    <PackageReference Include="MudBlazor" Version="6.14.0" />
+    <PackageReference Include="MyRadar.Common.Blobs" Version="6.1.3" />
+    <PackageReference Include="MyRadar.Common.Faults" Version="6.1.3" />
+    <PackageReference Include="MyRadar.Common.Media" Version="6.1.3" />
+    <PackageReference Include="NLog" Version="5.2.8" />
     <PackageReference Include="NLog.Targets.Syslog" Version="7.0.0" />
-    <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.5" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="5.3.8" />
   </ItemGroup>
 
   <ItemGroup>
