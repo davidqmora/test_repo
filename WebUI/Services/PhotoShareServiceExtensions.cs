@@ -2,8 +2,9 @@
 
 public static class PhotoShareServiceExtensions
 {
-    public static void AddPhotoShareService(this IServiceCollection services, IConfiguration configuration)
+    public static void AddPhotoShareServices(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddHttpClient<IPhotoShareService, PhotoShareService>();
+        services.AddHttpClient<ILegacyLoginService, LegacyLoginService>();
     }
 }

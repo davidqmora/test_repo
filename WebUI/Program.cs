@@ -57,7 +57,7 @@ WebApplication BuildApp(string[] args)
     services.AddApplicationInsightsTelemetry();
 
     services.AddAccountsServices(configuration.GetSection("PhotoShareAccounts"));
-    services.AddPhotoShareService(configuration);
+    services.AddPhotoShareServices(configuration);
 
     services.AddOptions();
     

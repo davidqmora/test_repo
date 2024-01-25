@@ -9,45 +9,63 @@ public class PhotoShareService(ITokenAcquisition acquisition, IConfiguration con
     private readonly string apiScope = configuration["AuthorizePhotoShare:ApiScope"] ?? "";
     private readonly string apiBaseAddress = configuration["AuthorizePhotoShare:BaseAddress"] ?? "";
 
-
-    public async Task<HttpResponseMessage> Authorize(CancellationToken cancellationToken)
+    private const string Version = "v2";
+    private const string BaseRoute = "photos";
+    
+    private readonly Dictionary<string, string> endpoints = new Dictionary<string, string>
     {
-        await InitializeClient();
-        var response = await client.GetAsync($"{apiBaseAddress}/v3/photoshare/authorize", cancellationToken);
-        return response;
+        {"authorize", $"/{Version}/{BaseRoute}/authorize"},
+        {"my-ids", $"/{Version}/{BaseRoute}/my-ids"},
+        {"my-markers", $"/{Version}/{BaseRoute}/my-markers"},
+        {"my-vote", $"/{Version}/{BaseRoute}/{{{0}}}/my-vote"},
+        {"comments", $"/{Version}/{BaseRoute}/{{{0}}}/comments"},
+        {"data", $"/{Version}/{BaseRoute}/{{{0}}}/data"}
+    };
+
+
+    public Task<HttpResponseMessage> Authorize(CancellationToken cancellationToken)
+    {
+        return GeneralApiOperation("authorize", cancellationToken);
+    }
+
+    public Task<HttpResponseMessage> GetMyPhotos(CancellationToken cancellationToken)
+    {
+        return GeneralApiOperation("my-ids", cancellationToken);
+    }
+
+    public  Task<HttpResponseMessage> GetMyMarkers(CancellationToken cancellationToken)
+    {
+        return GeneralApiOperation("my-markers", cancellationToken);
+    }
+
+    public Task<HttpResponseMessage> GetMyVoteForPhoto(string photoId, CancellationToken cancellationToken)
+    {
+        return PhotoApiOperation("my-vote", photoId, cancellationToken);
     }
     
-    public async Task<HttpResponseMessage> GetMyPhotos(CancellationToken cancellationToken)
+    public  Task<HttpResponseMessage> GetCommentsForPhoto(string photoId, CancellationToken cancellationToken)
     {
-        await InitializeClient();
-        var response = await client.GetAsync($"{apiBaseAddress}/v3/photoshare/my-ids", cancellationToken);
-        return response;
+        return PhotoApiOperation("comments", photoId, cancellationToken);
     }
 
-    public async Task<HttpResponseMessage> GetMyMarkers(CancellationToken cancellationToken)
+    public Task<HttpResponseMessage> GetDataForPhoto(string photoId, CancellationToken cancellationToken)
     {
-        await InitializeClient();
-        var response = await client.GetAsync($"{apiBaseAddress}/v3/photoshare/my-markers", cancellationToken);
-        return response;
+        return PhotoApiOperation("data", photoId, cancellationToken);
     }
 
-    public async Task<HttpResponseMessage> GetMyVoteForPhoto(string photoId, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage> GeneralApiOperation(string endpoint, CancellationToken cancellationToken)
     {
         await InitializeClient();
-        var response = await client.GetAsync($"{apiBaseAddress}/v3/photoshare/{photoId}/my-vote", cancellationToken);
-        return response;
+        return await client.GetAsync($"{apiBaseAddress}{endpoints[endpoint]}", cancellationToken);
     }
 
-    public async Task<HttpResponseMessage> GetCommentsForPhoto(string photoId, CancellationToken cancellationToken)
+    private async Task<HttpResponseMessage> PhotoApiOperation(string endpoint,
+        string photoId,
+        CancellationToken cancellationToken)
     {
         await InitializeClient();
-        return await client.GetAsync($"{apiBaseAddress}/v3/photoshare/{photoId}/comments", cancellationToken);
-    }
-
-    public async Task<HttpResponseMessage> GetDataForPhoto(string photoId, CancellationToken cancellationToken)
-    {
-        await InitializeClient();
-        return await client.GetAsync($"{apiBaseAddress}/v3/photoshare/{photoId}/data", cancellationToken);
+        var path = string.Format(endpoints[endpoint], photoId);
+        return await client.GetAsync($"{apiBaseAddress}{path}", cancellationToken);
     }
 
     private async Task InitializeClient()
