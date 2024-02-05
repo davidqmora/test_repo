@@ -1,0 +1,134 @@
+﻿@page "/my-photos"
+@using WebUI.Services
+@using Microsoft.Identity.Web
+@using Newtonsoft.Json
+@using WebUI.Model
+
+
+<h3>MyPhotos</h3>
+
+<MudPaper >
+    <MudButton Variant="Variant.Filled"
+               OnClick="@GetMyPhotos">
+        Get My Photo Ids
+    </MudButton>
+    <MudButton Variant="Variant.Filled"
+               OnClick="@GetMyMarkers">
+        Get My Photo Markers
+    </MudButton>
+</MudPaper>
+
+<MudPaper>
+    <MudDataGrid Items="dataRows" 
+                 T="string"
+                 Filterable="false" 
+                 Groupable="false"
+                 RowClick="@RowClicked">
+        <ToolBarContent>
+            <MudToolBar>
+                <MudButton OnClick="@GetPhotoData">Data</MudButton>
+            </MudToolBar>
+        </ToolBarContent>
+        <Columns>
+            <PropertyColumn Property="x => x"/>
+        </Columns>
+    </MudDataGrid>
+</MudPaper>
+<MudPaper>
+    <MudText>@PhotoInfo</MudText>
+</MudPaper>
+
+
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+@inject IPhotoShareService PhotoShareService
+
+@code {
+    [CascadingParameter]
+    private Task<AuthenticationState>? AuthenticationState { get; set; }
+    
+    private IEnumerable<string> dataRows = new List<string>();
+    private string currentPhotoId = string.Empty;
+    private string PhotoInfo { get; set; } = string.Empty; 
+
+
+    private async Task GetMyPhotos()
+    {
+        try
+        {
+            if (AuthenticationState is not null)
+            {
+                var authState = await AuthenticationState;
+                var user = authState?.User;
+                if (user is not null)
+                {
+                    // do something.
+                }
+            }
+            
+            var response = await PhotoShareService.GetMyPhotos(CancellationToken.None);
+            var idsString = await response.Content.ReadAsStringAsync();
+            dataRows = idsString.Split(',');
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            ConsentHandler.HandleException(e);
+        }
+    }
+
+    private async Task GetMyMarkers()
+    {
+        try
+        {
+            var response = await PhotoShareService.GetMyMarkers(CancellationToken.None);
+            var markers = await response.Content.ReadAsStringAsync();
+            dataRows = markers.ReplaceLineEndings().Split(Environment.NewLine);
+            StateHasChanged();
+        }
+        catch (Exception e)
+        {
+            ConsentHandler.HandleException(e);
+        }
+    }
+
+    private async void GetPhotoData()
+    {
+        if (string.IsNullOrEmpty(currentPhotoId))
+        {
+            return;
+        }
+        
+        try
+        {
+            var response = await PhotoShareService.GetDataForPhoto(currentPhotoId, CancellationToken.None);
+            if (response.StatusCode != System.Net.HttpStatusCode.OK)
+            {
+                StateHasChanged();
+                return;
+            }
+
+            var data = await response.Content.ReadFromJsonAsync<PhotoData>();
+            // if (data != null)
+            // {
+            //     Messages.Add($"  {comment.DisplayName}: {comment.Message}");
+            // }
+            PhotoInfo = await response.Content.ReadAsStringAsync();
+
+            StateHasChanged();
+        }
+        catch (JsonException e)
+        {
+            // Messages.Add("Unable to parse response");
+        }
+        catch (Exception e)
+        {
+            ConsentHandler.HandleException(e);
+        }
+    }
+
+    private void RowClicked(DataGridRowClickEventArgs<string> selectedRow)
+    {
+        currentPhotoId = selectedRow.Item;
+    }
+
+}

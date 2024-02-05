@@ -1,0 +1,52 @@
+﻿@page "/UseCases"
+@using MyRadar.Accounts
+@using MyRadar.Accounts.Installs
+@using WebUI.Common
+@using WebUI.Services
+<h3>Identity Hub User Migration Scenarios</h3>
+
+<MudPaper >
+    <MudButton Variant="Variant.Filled"
+               OnClick="@LoginViaPhotoShare">
+        PhotoShare Login
+    </MudButton>
+    <MudTextField Label="User email"
+                  Variant="Variant.Outlined"
+                    @bind-Value="@UserEmail" />
+    <MudButton Variant="Variant.Filled"
+               OnClick="@LoginViaIdentityHub">
+        Identity Hub Login
+    </MudButton>
+</MudPaper>
+
+
+@inject IAccountServiceMaker AccountServiceMaker
+@inject ILegacyLoginService LegacyLoginService
+@code {
+
+    public string? UserEmail { get; set; }
+
+    
+    private async Task LoginViaPhotoShare()
+    {
+        if (string.IsNullOrWhiteSpace(UserEmail)) return;
+        
+        var token = await LegacyLoginService.Login(UserEmail);
+        if (token == null)
+        {
+            // Do something.
+        };
+
+        if (token == NamedConstants.TOSARequired)
+        {
+            // Report it.
+        }
+    }
+    
+    private Task LoginViaIdentityHub()
+    {
+        throw new NotImplementedException();
+    }
+
+    
+}
