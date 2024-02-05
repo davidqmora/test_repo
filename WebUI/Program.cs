@@ -7,6 +7,7 @@ using MudBlazor.Services;
 using NLog;
 using NLog.Web;
 using MyRadar.Accounts;
+using WebUI;
 using WebUI.Services;
 
 WebApplication BuildApp(string[] args)
@@ -56,7 +57,7 @@ WebApplication BuildApp(string[] args)
 
     services.AddApplicationInsightsTelemetry();
 
-    services.AddAccountsServices(configuration.GetSection("PhotoShareAccounts"));
+    services.AddAccountContainerServices(configuration.GetSection("PhotoShareAccounts"));
     services.AddPhotoShareServices(configuration);
 
     services.AddOptions();

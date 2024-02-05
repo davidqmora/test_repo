@@ -1,16 +1,13 @@
 ﻿using System.Net.Http.Headers;
 using System.Text;
 using MyRadar.Accounts;
-using MyRadar.Accounts.Accounts;
 using MyRadar.Accounts.Installs;
-using MyRadar.Accounts.Search;
 using WebUI.Common;
 
 namespace WebUI.Services;
 
 public class LegacyLoginService(
-    IAccountServicesFactory accountServicesFactory,
-    IAccountSearchServicesFactory accountSearchServicesFactory,
+    IAccountServiceMaker accountServiceMaker,
     HttpClient client) : ILegacyLoginService
 {
     private const string LoginUrl = "https://authc.acmeaom.com/v1/authenticate";
@@ -20,7 +17,7 @@ public class LegacyLoginService(
     
     public async Task<string?> Login(string email)
     {
-        var installIds = await GetInstallIdFromEmail(email);
+        var installIds = await GetInstallIdsFromEmail(email);
         
         if (installIds == null || installIds.Count == 0) return null;
 
@@ -44,22 +41,23 @@ public class LegacyLoginService(
         return null;
     }
     
-    private async Task<IReadOnlyCollection<InstallId>?> GetInstallIdFromEmail(string email)
+    private async Task<IReadOnlyCollection<InstallId>?> GetInstallIdsFromEmail(string email)
     {
-        var accountSearchService = accountSearchServicesFactory.Create();
+        var accountSearchService = accountServiceMaker.Create();
         var userIdentity = UserIdentity.FromEmailIdentity(email);
 
         if (userIdentity == null) return null;
         
-        var account = await accountSearchService.FindAccountAsync(userIdentity);
+        var account = await accountSearchService.AccountQueries.TryLookupByAsync(userIdentity);
         if (account == null) return null;
         
-        var accountService = accountServicesFactory.Create();
-        var accountInstall = await accountService
-            .GetRegisteredInstallsServiceAsync(account.AccountId);
-        var installId = await accountInstall.GetInstallIdsAsync();
+        var accountService = accountServiceMaker.Create();
+        var installIds = await accountService
+            .ById(account.AccountId)
+            .Installs
+            .GetInstallIdsAsync();
         
-        return installId;
+        return installIds;
     }
     
 }
