@@ -40,13 +40,7 @@ WebApplication BuildApp(string[] args)
     });
     services.Configure<OpenIdConnectOptions>(configuration.GetSection("AzureAdB2C"));
     
-    services.AddControllersWithViews(options =>
-        {
-            var policy = new AuthorizationPolicyBuilder()
-                .RequireAuthenticatedUser()
-                .Build();
-            options.Filters.Add(new AuthorizeFilter(policy));
-        })
+    services.AddControllersWithViews()
         .AddMicrosoftIdentityUI();
 
     services.AddRazorPages();
