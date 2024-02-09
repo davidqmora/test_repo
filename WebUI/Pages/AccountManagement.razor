@@ -1,0 +1,18 @@
+﻿@page "/account"
+@using WebUI.Model
+
+<h2 class="mt-2">Account Management</h2>
+
+<UserStatus OnPropertiesChanged="@HandlePropertiesChanged" />
+<UserEmails/>
+<UserProfileForm RequiredProperties="properties"/>
+
+
+@code {
+    private RequiredProperties properties = new();
+    
+    private void HandlePropertiesChanged(RequiredProperties newProperties)
+    {
+        properties = newProperties;
+    }
+}

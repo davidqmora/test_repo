@@ -1,0 +1,51 @@
+﻿@using System.Text.Json
+@using Microsoft.Identity.Web
+
+<MudStack Spacing="3"
+          AlignItems="AlignItems.Start"
+          Class="pa-3">
+    <MudButton Variant="Variant.Filled"
+               OnClick="@GetProfileEmails">
+        Get Emails
+    </MudButton>
+<MudPaper Class="mt-4">
+    <pre>
+        <code>
+            @emails
+        </code>
+    </pre>
+</MudPaper>
+</MudStack>
+
+
+@inject ILocalAccountService LocalAccountService
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+@code {
+    private string? emails;
+
+    private async Task GetProfileEmails()
+    {
+        try
+        {
+            emails = null;
+            StateHasChanged();
+            
+            var response = await LocalAccountService.GetProfileEmails(CancellationToken.None);
+
+            if (response.IsSuccessStatusCode)
+            {
+                var content = await response.Content.ReadAsStringAsync();
+                using var jsonDoc = JsonDocument.Parse(content);
+                emails = JsonSerializer.Serialize(jsonDoc, new JsonSerializerOptions { WriteIndented = true });
+            }
+            else
+            {
+                emails = response.ReasonPhrase;
+            }
+        }
+        catch (Exception e)
+        {
+            ConsentHandler.HandleException(e);
+        }
+    }
+}

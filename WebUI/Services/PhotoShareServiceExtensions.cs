@@ -6,5 +6,6 @@ public static class PhotoShareServiceExtensions
     {
         services.AddHttpClient<IPhotoShareService, PhotoShareService>();
         services.AddHttpClient<ILegacyLoginService, LegacyLoginService>();
+        services.AddHttpClient<ILocalAccountService, LocalAccountService>();
     }
 }
