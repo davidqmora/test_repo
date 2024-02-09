@@ -7,7 +7,7 @@ using WebUI.Common;
 namespace WebUI.Services;
 
 public class LegacyLoginService(
-    IAccountServiceMaker accountServiceMaker,
+    IAccountService accountService,
     HttpClient client) : ILegacyLoginService
 {
     private const string LoginUrl = "https://authc.acmeaom.com/v1/authenticate";
@@ -43,15 +43,13 @@ public class LegacyLoginService(
     
     private async Task<IReadOnlyCollection<InstallId>?> GetInstallIdsFromEmail(string email)
     {
-        var accountSearchService = accountServiceMaker.Create();
         var userIdentity = UserIdentity.FromEmailIdentity(email);
 
         if (userIdentity == null) return null;
         
-        var account = await accountSearchService.AccountQueries.TryLookupByAsync(userIdentity);
+        var account = await accountService.AccountQueries.TryLookupByAsync(userIdentity);
         if (account == null) return null;
         
-        var accountService = accountServiceMaker.Create();
         var installIds = await accountService
             .ById(account.AccountId)
             .Installs

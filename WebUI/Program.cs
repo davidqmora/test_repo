@@ -57,6 +57,7 @@ WebApplication BuildApp(string[] args)
 
     services.AddApplicationInsightsTelemetry();
 
+    services.AddAccountGraphServices(configuration.GetSection("MsGraph"), tenantName:"Discovery Tenant");
     services.AddAccountContainerServices(configuration.GetSection("PhotoShareAccounts"));
     services.AddPhotoShareServices(configuration);
 
