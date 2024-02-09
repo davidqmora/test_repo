@@ -10,10 +10,12 @@
         </MudButton>
     </Authorized>
     <NotAuthorized>
-        <MudIconButton Edge="Edge.Start"
-                       Icon="@Icons.Material.Filled.Login"
-                       Href="MicrosoftIdentity/Account/SignIn">
+        <MudButton Variant="Variant.Text" 
+                   StartIcon="@Icons.Material.Filled.Login"
+                   IconColor="Color.Dark"
+                   Href="MicrosoftIdentity/Account/SignIn"
+                   Class="ms-2">
             <MudText Color="Color.Dark">Login</MudText>
-        </MudIconButton>
+        </MudButton>
     </NotAuthorized>
 </AuthorizeView>
