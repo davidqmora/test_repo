@@ -1,0 +1,67 @@
+﻿@using System.Text.Json
+@using System.ComponentModel
+<MudStack>
+    <MudRadioGroup @bind-Value="@UserType">
+        <MudRadio Value="@("enabled")">Enabled</MudRadio>
+        <MudRadio Value="@("not_enabled")">Not Enabled</MudRadio>
+        <MudRadio Value="@("partially_enabled")">Partially Enabled</MudRadio>
+    </MudRadioGroup>
+    <MudForm Disabled="@(UserType != "partially_enabled")">
+        <MudCheckBox T="bool"
+                     Label="Social Handle"
+                     @bind-Value="@(missingProperties["social_handle"])"/>
+        <MudCheckBox T="bool"
+                     Label="Preferred Email"
+                     @bind-Value="@(missingProperties["preferred_email"])"/>
+        <MudCheckBox T="bool"
+                     Label="Country Region"
+                     @bind-Value="@(missingProperties["country_region"])"/>
+        <MudCheckBox T="bool"
+                     Label="Age Of Indemnity"
+                     @bind-Value="@(missingProperties["age_indemnity"])"/>
+        <MudCheckBox T="bool"
+                     Label="Terms Of Use"
+                     @bind-Value="@(missingProperties["terms_of_use"])"/>
+    </MudForm>
+    <MudNumericField Label="Email Count"
+                     @bind-Value="emailCount"
+                     Disabled="@(UserType == "enabled" || 
+                                 (UserType != "not_enabled" && missingProperties["preferred_email"] == false))"
+                     />
+</MudStack>
+
+@code {
+    private string UserType { get; set; } = "enabled";
+
+    private Dictionary<string, bool> missingProperties = new()
+    {
+        { "social_handle", true },
+        { "preferred_email", true },
+        { "country_region", true },
+        { "age_indemnity", true },
+        { "terms_of_use", true }
+    };
+
+    private int? emailCount;
+
+    public string GetUseCaseQuery()
+    {
+        var query = $"user_type={UserType}";
+
+        if (UserType == "partially_enabled")
+        {
+            query += $"&social_handle={missingProperties["social_handle"]}" +
+                     $"&preferred_email={missingProperties["preferred_email"]}" +
+                     $"&country_region={missingProperties["country_region"]}" +
+                     $"&age_indemnity={missingProperties["age_indemnity"]}" +
+                     $"&terms_of_use={missingProperties["terms_of_use"]}";
+        }
+
+        if (emailCount is not null)
+        {
+            query += $"&email_count={emailCount}";
+        }
+
+        return query;
+    }
+}

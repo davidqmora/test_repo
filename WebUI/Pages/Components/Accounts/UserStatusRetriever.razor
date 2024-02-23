@@ -1,0 +1,57 @@
+﻿@using System.Text.Json
+@using Microsoft.Identity.Web
+@using WebUI.Model
+
+<div @attributes="CapturedAttributes">
+    <MudStack Spacing="3"
+              AlignItems="AlignItems.Start"
+              Class="pa-3">
+        <MudButton Variant="Variant.Filled"
+                   OnClick="@GetAccountStatus">
+            Get Status
+        </MudButton>
+        <MudPaper Class="mt-4">
+            <pre>
+        <code>
+            @status
+        </code>
+    </pre>
+        </MudPaper>
+    </MudStack>
+</div>
+
+@inject ILocalAccountService LocalAccountService
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+
+@code {
+    [Parameter] public EventCallback<RequiredProperties> OnPropertiesChanged { get; set; }
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? CapturedAttributes { get; set; }
+
+    private string? status;
+
+    private async Task GetAccountStatus()
+    {
+        try
+        {
+            status = null;
+            StateHasChanged();
+
+            var accountStatus = await LocalAccountService.GetAccountStatus(CancellationToken.None);
+            if (accountStatus is not null)
+            {
+                await OnPropertiesChanged.InvokeAsync(accountStatus.RequiredProperties);
+            }
+            else
+            {
+                status = "Unable to retrieve status";
+            }
+        }
+        catch (Exception e)
+        {
+            ConsentHandler.HandleException(e);
+        }
+    }
+
+}

@@ -1,0 +1,20 @@
+﻿<MudDialog>
+    <DialogContent>
+        <MudContainer Style="max-height:50%; overflow-y: scroll">
+            <p>Lorem ipsum dolor sit amet, in iriure perfecto rationibus vis, usu agam euismod concludaturque te. Has laudem deleniti voluptatum at, primis commune id vix. Elit pericula sed id, sit essent denique evertitur in. Ius te quem ridens epicuri. Wisi accusamus per ne, sea inani dicam antiopam no. No eum quaeque debitis deleniti, nam brute antiopam et, eum mazim tantas menandri ne.</p>
+            <p class="mt-2">Vel ea dolore dicunt meliore, summo laudem usu no. Qui et rebum tantas aliquid. Ut maluisset deseruisse ius, vim veritus accusamus et, ad simul noluisse his. Te velit sententiae eum. Cetero labitur mnesarchum ei ius, reque virtute vulputate vim id.</p>
+            <p class="mt-2">Pro ex hendrerit complectitur, integre suscipiantur nam ea. Vel te fuisset mediocritatem. Ad augue vituperatoribus sea, eius commune in per. In saepe feugait molestiae quo. Ne ubique fuisset officiis eam, mea ei nihil officiis, petentium incorrupte in vix.</p>
+            <p class="mt-2">Vix cu populo dissentiunt, harum dissentiet mel eu, sea eu sint adhuc assum. Nam omnes lucilius te, cum ne nihil euismod adipisci. Legimus albucius efficiantur his et, facilis invenire quo cu. Eu pro alia iisque delectus. Animal propriae petentium duo et. Pri sumo efficiendi quaerendum in, ut dicit pertinax voluptaria pri, eam posse ludus disputando at.</p>
+            <p class="mt-2">Vis novum denique an, ei vis adipisci dignissim concludaturque. Quo invenire perpetua eu, id pro delicata argumentum conclusionemque. Vel in indoctum prodesset, ius ut vero menandri, graeci animal platonem ei mei. Sit id illum verterem adolescens. Ea nec erat deleniti repudiandae, ei mea mutat nostro legendos, sea explicari liberavisse ei. Modus mollis scaevola vix eu.</p>
+        </MudContainer>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Color="Color.Primary" OnClick="@Dismiss">Dismiss</MudButton>
+    </DialogActions>
+</MudDialog>
+
+@code {
+    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
+
+    void Dismiss() => MudDialog?.Cancel();    
+}

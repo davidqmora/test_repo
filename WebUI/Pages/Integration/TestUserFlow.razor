@@ -1,0 +1,152 @@
+﻿@page "/integration/test-user-flow"
+
+@using System.Text
+@using System.Text.Json
+@using Microsoft.Identity.Web
+@using WebUI.Model
+
+<MudStack Spacing="3"
+          AlignItems="AlignItems.Start"
+          Class="flex-column pa-3">
+    <h2 class="my-2">User Flow</h2>
+    @if (TestUser)
+    {
+        <MudText Class="my-2">Set the desired user status.</MudText>
+        <UseCaseSelector @ref="useCaseSelector"/>
+        <MudButton OnClick="@RunFlow"
+                   Class="my-2"
+                   Variant="Variant.Filled">
+            Start Flow
+        </MudButton>
+    }
+    <MudPaper Width="50%">
+        <LogBox Contents="@logBuffer"/>
+    </MudPaper>
+</MudStack>
+
+
+@inject NavigationManager Navigation
+@inject ILocalAccountService LocalAccountService
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+@inject IDialogService DialogService
+
+@code {
+    [Parameter] public bool TestUser { get; set; }
+    
+    private readonly StringBuilder logBuilder = new();
+    private string logBuffer = string.Empty;
+    private UseCaseSelector? useCaseSelector;
+    AccountStatus? accountStatus;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitializedAsync();
+        InvokeAsync(RunFlow);
+    }
+
+    private async Task RunFlow()
+    {
+        Log("Retrieving status...");
+
+        try
+        {
+            var query = useCaseSelector?.GetUseCaseQuery();
+            accountStatus = TestUser 
+                ? await LocalAccountService.GetMockAccountStatus(query, CancellationToken.None) 
+                : await LocalAccountService.GetAccountStatus(CancellationToken.None);
+                
+
+            Log("Response:");
+            if (accountStatus is null)
+            {
+                Log("Request failed. More details in the Console log");
+                return;
+            }
+
+            if (accountStatus.UserStatus == UserStatus.Enabled)
+            {
+                Log(JsonSerializer.Serialize(accountStatus));
+                // Give the user an instant to see the result.
+                await Task.Delay(600);
+
+                Navigation.NavigateTo("/integration/user-enabled");
+            }
+            else
+            {
+                await ShowPreRequirementsMessage(accountStatus.UserStatus);
+
+                var userProfile = await GatherMissingProperties();
+                if (userProfile is null) return;
+                
+                await UpdateProfile(userProfile);
+            }
+            StateHasChanged();
+        }
+        catch (MicrosoftIdentityWebChallengeUserException e)
+        {
+            ConsentHandler.HandleException(e);
+        }
+    }
+
+    private async Task UpdateProfile(UserProfile userProfile)
+    {
+        Log("Updating profile...");
+        var response = await LocalAccountService.UpdateProfile(userProfile, CancellationToken.None);
+        var submissionResponse = response.IsSuccessStatusCode ? "Accepted" : response.ReasonPhrase;
+        Log("Response:");
+        Log(submissionResponse);
+    }
+
+    private async Task<UserProfile?> GatherMissingProperties()
+    {
+        var formParams = new DialogParameters<UserProfileFormDialog>
+        {
+            { d => d.AccountStatus, accountStatus }
+        };
+        var profileForm = await DialogService.ShowAsync<UserProfileFormDialog>(
+            "Missing Properties", formParams);
+        var result = await profileForm.Result;
+                
+        if (result.Canceled)
+        {
+            Log("Profile not completed. The user remains unable to use PhotoShare.");
+            return null;
+        }
+
+        var userProfile = result.Data as UserProfile;
+        Log("Updated profile:");
+        Log(JsonSerializer.Serialize(userProfile));
+        return userProfile;
+    }
+
+    private void Log(string? message)
+    {
+        if (string.IsNullOrWhiteSpace(message)) return;
+
+        logBuilder.AppendLine(message);
+        logBuffer = logBuilder.ToString();
+        StateHasChanged();
+    }
+
+    private async Task ShowPreRequirementsMessage(UserStatus userStatus)
+    {
+        var heading = userStatus == UserStatus.NotEnabled ? "Registration Required (User Not Enabled)" : "Additional Information Required (User Partially Enabled";
+
+        var message = "An explanation of the user status and why some " +
+                      "information is required before they can use the PhotoShare " +
+                      "service. Then notice that they will be presented with a " +
+                      "form to collect that information.";
+
+        await DialogService.ShowMessageBox(
+            heading,
+            message,
+            yesText: "Dismiss"
+        );
+    }
+
+    private void ShowTermsOfUse()
+    {
+        DialogService.Show<TouDialog>();
+    }
+
+}

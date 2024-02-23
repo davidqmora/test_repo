@@ -1,0 +1,129 @@
+﻿@using WebUI.Model
+
+<MudDialog>
+    <DialogContent>
+        <MudForm>
+
+            @if (AccountStatus?.RequiredProperties is { PreferredEmail: true })
+            {
+                <MudSelect T="string"
+                           @bind-Value="@userProfile.PreferredEmail"
+                           Label="Preferred Email"
+                           Required="true"
+                           RequiredError="Preferred Email is required.">
+                    @if (AccountStatus?.AvailableEmails != null)
+                    {
+                        foreach (var email in AccountStatus.AvailableEmails)
+                        {
+                            <MudSelectItem Value="@email">@email</MudSelectItem>        
+                        }
+                    }
+                </MudSelect>
+            }
+            @if (AccountStatus?.RequiredProperties is { SocialHandle: true })
+            {
+                <MudTextField T="string"
+                              @bind-Value="@userProfile.SocialHandle"
+                              Label="Social Handle"
+                              Required="true"
+                              RequiredError="Social Handle is required."/>
+            }
+            @if (AccountStatus?.RequiredProperties is { CountryOrRegion: true })
+            {
+                <MudTextField T="string"
+                              @bind-Value="@userProfile.CountryOrRegion"
+                              Label="Country/Region"
+                              Required="true"
+                              RequiredError="Country Or Region is required."/>
+            }
+            @if (AccountStatus?.RequiredProperties is { AgeOfIndemnity: true })
+            {
+                <MudCheckBox @bind-Value="@ageOfIndemnity"
+                             Label="Age Of Indemnity"
+                             T="bool"
+                             Required="true"
+                             RequiredError="Age Of Indemnity is required."/>
+            }
+            @if (AccountStatus?.RequiredProperties is { TermsOfUseAgreement: true })
+            {
+                <MudCheckBox @bind-Value="@termsOfUse" Label="Terms Of Use Agreement"
+                             T="bool"
+                             @ref="tosaControl"
+                             Required="true"
+                             RequiredError="Terms Of Use Agreement is required."/>
+                <MudButton Variant="Variant.Text"
+                           Color="Color.Primary"
+                           OnClick="@SeeTermsOfUse">
+                    See Terms
+                </MudButton>
+            }
+        </MudForm>
+    </DialogContent>
+    <DialogActions>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   DisableElevation="true"
+                   OnClick="@HandleSubmit">
+            Submit
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Secondary"
+                   DisableElevation="true"
+                   OnClick="@HandleReset">
+            Reset
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Secondary"
+                   DisableElevation="true"
+                   OnClick="@HandleCancel">
+            Cancel
+        </MudButton>
+    </DialogActions>
+</MudDialog>
+
+
+@inject IDialogService DialogService
+
+@code {
+    [CascadingParameter] MudDialogInstance? MudDialog { get; set; }
+
+    [Parameter] public AccountStatus? AccountStatus { get; set; }
+
+    private UserProfile userProfile = new();
+    private bool ageOfIndemnity;
+    private bool termsOfUse;
+
+    private MudCheckBox<bool>? tosaControl;
+
+    private void HandleSubmit()
+    {
+        if (ageOfIndemnity)
+        {
+            userProfile.AgeOfIndemnity = ageOfIndemnity;
+        }
+
+        if (termsOfUse)
+        {
+            userProfile.TermsOfUseAgreement = DateTime.Now;
+        }
+
+        MudDialog?.Close(DialogResult.Ok(userProfile));
+    }
+
+    private void HandleReset()
+    {
+        userProfile = new UserProfile();
+        if (tosaControl != null)
+        {
+            tosaControl.Value = false;
+        }
+    }
+
+    private void HandleCancel() => MudDialog?.Cancel();
+
+    private void SeeTermsOfUse()
+    {
+        DialogService.Show<TouDialog>();
+    }
+
+}

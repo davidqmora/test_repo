@@ -1,13 +1,12 @@
+using System.Net;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using MudBlazor.Services;
 using NLog;
 using NLog.Web;
-using MyRadar.Accounts;
-using WebUI;
+using MyRadar.Accounts;using Polly;
+using Polly.Extensions.Http;
 using WebUI.Services;
 
 WebApplication BuildApp(string[] args)
@@ -51,9 +50,13 @@ WebApplication BuildApp(string[] args)
 
     services.AddApplicationInsightsTelemetry();
 
-    services.AddAccountGraphServices(configuration.GetSection("MsGraph"), tenantName:"Discovery Tenant");
-    services.AddAccountContainerServices(configuration.GetSection("PhotoShareAccounts"));
-    services.AddPhotoShareServices(configuration);
+    services.AddAccountServices(sourceBuilder =>
+    {
+        sourceBuilder
+            .AddCosmosDb(configuration.GetSection("AccountsDB"))
+            .Build();
+    });
+    services.AddPhotoShareServices(GetRetryPolicy());
 
     services.AddOptions();
     
@@ -82,6 +85,14 @@ void RunApp(WebApplication application)
     application.MapFallbackToPage("/_Host");
 
     application.Run();
+}
+
+static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
+{
+    return HttpPolicyExtensions
+        .HandleTransientHttpError()
+        .OrResult(msg => msg.StatusCode == HttpStatusCode.NotFound)
+        .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
 }
 
 

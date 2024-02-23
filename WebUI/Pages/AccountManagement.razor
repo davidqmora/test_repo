@@ -1,18 +1,90 @@
 ﻿@page "/account"
+
+@inject NavigationManager Navigation
 @using WebUI.Model
 
-<h2 class="mt-2">Account Management</h2>
+<h1 class="mt-2">Account Management</h1>
 
-<UserStatus OnPropertiesChanged="@HandlePropertiesChanged" />
-<UserEmails/>
+<MudPaper Class="d-block my-2 pa-2 w-auto"
+          Elevation="0">
+    <MudText>
+        The PhotoShare Integration flow can be tested in two ways:
+    </MudText>
+</MudPaper>
+
+
+<MudStack Row
+          Class="w-auto pa-3">
+    <MudPaper Width="45%"
+              Elevation="0">
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent>
+                    <MudText Typo="Typo.h6">Based on the signed in user</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText>
+                    In this case, the flow will query the official Accounts Web API
+                    and report the current status of the user. Any changes done to the
+                    account are saved. This is closer to the behavior and effects of a
+                    client application, but setting up the user to test different paths
+                    may be cumbersome.
+                </MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled"
+                           OnClick="@(() => Navigation.NavigateTo("/integration/signed-user-flow"))">
+                    Signed-in User Flow
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudPaper>
+
+    <MudPaper Width="45%" 
+              Elevation="0">
+        <MudCard>
+            <MudCardHeader>
+                <CardHeaderContent >
+                    <MudText Typo="Typo.h6">Based a synthetic test user</MudText>
+                </CardHeaderContent>
+            </MudCardHeader>
+            <MudCardContent>
+                <MudText>
+                    In this case the flow accesses stubbed endpoints in the Accounts Web API
+                    that facilitate creating test cases to exercise different paths for the
+                    client application to take. However, the API itself is not part of the test.
+                </MudText>
+            </MudCardContent>
+            <MudCardActions>
+                <MudButton Variant="Variant.Filled"
+                           OnClick="@(() => Navigation.NavigateTo("/integration/test-user-flow"))">
+                    Test User Flow
+                </MudButton>
+            </MudCardActions>
+        </MudCard>
+    </MudPaper>
+</MudStack>
+
+
+<UserStatusRetriever OnPropertiesChanged="@HandlePropertiesChanged"
+                     class="mt-3"/>
 <UserProfileForm RequiredProperties="properties"/>
 
 
 @code {
     private RequiredProperties properties = new();
-    
+
     private void HandlePropertiesChanged(RequiredProperties newProperties)
     {
         properties = newProperties;
     }
+
+    private UseCaseSelector? useCaseSelector;
+
+    private void OnFlowStart()
+    {
+        Console.WriteLine(useCaseSelector?.GetUseCaseQuery());
+    }
+
 }

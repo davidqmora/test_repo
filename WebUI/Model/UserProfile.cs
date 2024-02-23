@@ -4,14 +4,6 @@ namespace WebUI.Model;
 
 public class UserProfile
 {
-    [JsonPropertyName("first_name")]
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? FirstName { get; set; }
-    
-    [JsonPropertyName("last_name")] 
-    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public string? LastName { get; set; }
-    
     [JsonPropertyName("social_handle")]
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? SocialHandle { get; set; }

@@ -4,7 +4,7 @@ namespace WebUI.Services;
 
 public interface ILocalAccountService
 {
-    Task<HttpResponseMessage> GetAccountStatus(CancellationToken cancellationToken);
-    Task<HttpResponseMessage> GetProfileEmails(CancellationToken cancellationToken);
+    Task<AccountStatus?> GetAccountStatus(CancellationToken cancellationToken);
     Task<HttpResponseMessage> UpdateProfile(UserProfile profile, CancellationToken cancellationToken);
+    Task<AccountStatus?> GetMockAccountStatus(string? query, CancellationToken cancellationToken);
 }

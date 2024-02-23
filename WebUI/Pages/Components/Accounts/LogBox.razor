@@ -1,0 +1,18 @@
+﻿<div @attributes="CapturedAttributes">
+    <MudPaper Elevation="0">
+        <MudTextField T="string"
+                      Variant="Variant.Outlined"
+                      Lines="10"
+                      ReadOnly
+                      Class="overflow-scroll"
+                      Value="Contents"/>
+    </MudPaper>
+</div>
+
+@code {
+    [Parameter] 
+    public string Contents { get; set; } = string.Empty;
+    
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? CapturedAttributes { get; set; }
+}

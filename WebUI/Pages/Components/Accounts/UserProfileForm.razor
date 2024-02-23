@@ -1,23 +1,8 @@
 ﻿@using WebUI.Model
 @using Microsoft.Identity.Web
 <MudForm>
-    @if (RequiredProperties.FirstName)
-    {
-        <MudTextField T="string"
-                      @bind-Value="userProfile.FirstName"
-                      Label="First Name"
-                      Required="true"
-                      RequiredError="First Name is required."/>
-    }
-    @if (RequiredProperties.LastName)
-    {
-        <MudTextField T="string"
-                      @bind-Value="userProfile.LastName"
-                      Label="Last Name"
-                      Required="true"
-                      RequiredError="Ladt Name is required."/>
-    }
-    @if (RequiredProperties.PreferredEmail)
+    
+    @if (RequiredProperties is { PreferredEmail: true })
     {
         <MudTextField T="string"
                       @bind-Value="@userProfile.PreferredEmail"
@@ -25,7 +10,7 @@
                       Required="true"
                       RequiredError="Preferred Email is required."/>
     }
-    @if (RequiredProperties.SocialHandle)
+    @if (RequiredProperties is { SocialHandle: true })
     {
         <MudTextField T="string"
                       @bind-Value="@userProfile.SocialHandle"
@@ -33,7 +18,7 @@
                       Required="true"
                       RequiredError="Social Handle is required."/>
     }
-    @if (RequiredProperties.CountryOrRegion)
+    @if (RequiredProperties is { CountryOrRegion: true })
     {
         <MudTextField T="string"
                       @bind-Value="@userProfile.CountryOrRegion"
@@ -41,36 +26,45 @@
                       Required="true"
                       RequiredError="Country Or Region is required."/>
     }
-    @if (RequiredProperties.AgeOfIndemnity)
+    @if (RequiredProperties is { AgeOfIndemnity: true })
     {
         <MudCheckBox @bind-Value="@userProfile.AgeOfIndemnity"
                      Label="Age Of Indemnity"
                      Required="true"
                      RequiredError="Age Of Indemnity is required."/>
     }
-    @if (RequiredProperties.TermsOfUseAgreement)
+    @if (RequiredProperties is { TermsOfUseAgreement: true })
     {
         <MudCheckBox Label="Terms Of Use Agreement"
-                     T="bool?"
+                     T="bool"
                      @ref="tosaControl"
                      Required="true"
                      RequiredError="Terms Of Use Agreement is required."
                      CheckedChanged="@HandleAgeOfIndemnityClick"/>
+        <MudButton Variant="Variant.Text"
+                   Color="Color.Primary"
+                   OnClick="@SeeTermsOfUse">
+            See Terms
+        </MudButton>
     }
     @if (arePropertiesRequired)
     {
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Primary"
-                   DisableElevation="true"
-                   OnClick="@HandleSubmit">
-            Submit
-        </MudButton>
-        <MudButton Variant="Variant.Filled"
-                   Color="Color.Secondary"
-                   DisableElevation="true"
-                   OnClick="@HandleReset">
-            Reset
-        </MudButton>
+        <MudStack Row
+                  Spacing="4"
+                  Class="mt-4">
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Primary"
+                       DisableElevation="true"
+                       OnClick="@HandleSubmit">
+                Submit
+            </MudButton>
+            <MudButton Variant="Variant.Filled"
+                       Color="Color.Secondary"
+                       DisableElevation="true"
+                       OnClick="@HandleReset">
+                Reset
+            </MudButton>
+        </MudStack>
     }
     else
     {
@@ -80,7 +74,7 @@
     }
 </MudForm>
 <MudPaper>
-    @submissionResponse    
+    @submissionResponse
 </MudPaper>
 
 
@@ -88,28 +82,35 @@
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
 @code {
-    [Parameter] public required RequiredProperties RequiredProperties { get; set; }
+    [Parameter] public RequiredProperties? RequiredProperties { get; set; }
+    [Parameter] public EventCallback OnTouRequested { get; set; }
 
     private UserProfile userProfile = new();
 
     private string? submissionResponse;
     private bool arePropertiesRequired;
-    private MudCheckBox<bool?>? tosaControl;
+    private MudCheckBox<bool>? tosaControl;
 
     protected override void OnParametersSet()
     {
         base.OnParametersSet();
-        arePropertiesRequired = RequiredProperties.FirstName || RequiredProperties.LastName ||
-                                RequiredProperties.PreferredEmail || RequiredProperties.SocialHandle ||
+        if (RequiredProperties is null)
+        {
+            arePropertiesRequired = false;
+            return;
+        }
+        
+        arePropertiesRequired = RequiredProperties.PreferredEmail || RequiredProperties.SocialHandle ||
                                 RequiredProperties.CountryOrRegion || RequiredProperties.AgeOfIndemnity ||
-                                RequiredProperties.TermsOfUseAgreement;
+                                RequiredProperties.PreferredEmail || RequiredProperties.TermsOfUseAgreement;
     }
 
     private async Task HandleSubmit()
     {
         submissionResponse = null;
         StateHasChanged();
-        
+
+
         var response = await LocalAccountService.UpdateProfile(userProfile, CancellationToken.None);
         submissionResponse = response.IsSuccessStatusCode ? "Accepted" : response.ReasonPhrase;
     }
@@ -119,13 +120,18 @@
         userProfile = new UserProfile();
         if (tosaControl != null)
         {
-            tosaControl.Value = null;
+            tosaControl.Value = false;
         }
     }
 
-    private void HandleAgeOfIndemnityClick(bool? isChecked)
+    private void HandleAgeOfIndemnityClick(bool isChecked)
     {
-        userProfile.TermsOfUseAgreement = isChecked.HasValue && isChecked.Value ? DateTime.Now : null;
+        userProfile.TermsOfUseAgreement = isChecked ? DateTime.Now : null;
+    }
+
+    private void SeeTermsOfUse()
+    {
+        OnTouRequested.InvokeAsync();
     }
 
 }
