@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net8.0</TargetFramework>
@@ -6,7 +6,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <WebProject_DirectoryAccessLevelKey>0</WebProject_DirectoryAccessLevelKey>
     <LangVersion>12</LangVersion>
-    <UserSecretsId>78fb22e7-1ed0-4b96-b0ed-d26a4f0724dc</UserSecretsId>
+    <UserSecretsId>82069828-aea3-4da2-ab34-0fc9cdf555cd</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
