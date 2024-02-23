@@ -95,7 +95,7 @@ try
 }
 catch (Exception exception)
 {
-    logger.Error(exception, "Unhandled exception running Lamarr WebUI");
+    logger.Error(exception, "Unhandled exception running Identity Hub WebUI");
     throw;
 }
 finally

@@ -1,2 +1,2 @@
-# lamarr_webui
-Web App to test and manage the brokerage of identities between ACME's B2C AD and PhotoShare user base.
+# identity_hub_webui
+Prototype for the Identity Hub Web Portal
