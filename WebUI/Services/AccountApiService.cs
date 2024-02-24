@@ -7,7 +7,7 @@ using WebUI.Model;
 
 namespace WebUI.Services;
 
-public class LocalAccountService(ITokenAcquisition tokenAcquisition, IConfiguration configuration, HttpClient client) : ILocalAccountService
+public class AccountApiService(ITokenAcquisition tokenAcquisition, IConfiguration configuration, HttpClient client) : IAccountApiService
 {  
     private readonly string apiReadScope = configuration["AccountsApi:ApiReaderScope"] ?? "";
     private readonly string apiBaseAddress = configuration["AccountsApi:BaseAddress"] ?? "";
@@ -24,10 +24,9 @@ public class LocalAccountService(ITokenAcquisition tokenAcquisition, IConfigurat
         {"profile", $"/{Version}/{ProfilesRoute}"}
     };
 
-    public async Task<AccountStatus?> GetAccountStatus(CancellationToken cancellationToken)
+    public Task<HttpResponseMessage> GetAccountStatus(CancellationToken cancellationToken)
     {
-        var response = await ApiGetOperation("status", cancellationToken);
-        return await CreateAccountStatus(response);
+        return ApiGetOperation("status", cancellationToken);
     }
 
     public Task<HttpResponseMessage> GetProfileEmails(CancellationToken cancellationToken)
@@ -45,42 +44,11 @@ public class LocalAccountService(ITokenAcquisition tokenAcquisition, IConfigurat
          return await client.PatchAsync($"{apiBaseAddress}{endpoints["profile"]}", updateRequest, cancellationToken);
     }
 
-    public async Task<AccountStatus?> GetMockAccountStatus(string? query, CancellationToken cancellationToken)
-    {
-        var response = await ApiGetWithQueryOperation("status-dev", query, cancellationToken);
-        return await CreateAccountStatus(response);
-    }
-
-    private static async Task<AccountStatus?> CreateAccountStatus(HttpResponseMessage response)
-    {
-        if (!response.IsSuccessStatusCode)
-        {
-            return null;
-        }
-
-        var jsonContent = await response.Content.ReadAsStringAsync();
-
-        var accountStatus = new AccountStatus();
-        
-        using var jsonDoc = JsonDocument.Parse(jsonContent);
-        accountStatus.UserStatus = jsonDoc.RootElement.GetProperty("status").Deserialize<UserStatus>();
-        
-        if (jsonDoc
-            .RootElement
-            .TryGetProperty("required_missing_properties", out var requiredPropertiesElement))
-        {
-            accountStatus.RequiredProperties = requiredPropertiesElement.Deserialize<RequiredProperties>();
-        }
-
-        if (jsonDoc
-            .RootElement
-            .TryGetProperty("available_emails", out var availableEmailsElement))
-        {
-            accountStatus.AvailableEmails = availableEmailsElement.Deserialize<List<string>>();
-        }
-        
-        return accountStatus;
-    }
+    // public async Task<AccountStatus?> GetMockAccountStatus(string? query, CancellationToken cancellationToken)
+    // {
+    //     var response = await ApiGetWithQueryOperation("status-dev", query, cancellationToken);
+    //     return await CreateAccountStatus(response);
+    // }
 
 
     private async Task<HttpResponseMessage> ApiGetOperation(string endpoint, CancellationToken cancellationToken)

@@ -56,7 +56,7 @@ WebApplication BuildApp(string[] args)
             .AddCosmosDb(configuration.GetSection("AccountsDB"))
             .Build();
     });
-    services.AddPhotoShareServices(GetRetryPolicy());
+    services.AddLocalServices(GetRetryPolicy());
 
     services.AddOptions();
     
