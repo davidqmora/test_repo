@@ -55,7 +55,8 @@ WebApplication BuildApp(string[] args)
             .AddCosmosDb(configuration.GetSection("AccountsDB"))
             .Build();
     });
-    services.AddLocalServices(GetRetryPolicy(), useMockServices: true);
+    
+    services.AddLocalServices(configuration);
 
     services.AddOptions();
     
@@ -85,15 +86,6 @@ void RunApp(WebApplication application)
 
     application.Run();
 }
-
-static IAsyncPolicy<HttpResponseMessage> GetRetryPolicy()
-{
-    return HttpPolicyExtensions
-        .HandleTransientHttpError()
-        .OrResult(msg => msg.StatusCode == HttpStatusCode.NotFound)
-        .WaitAndRetryAsync(6, retryAttempt => TimeSpan.FromSeconds(Math.Pow(2, retryAttempt)));
-}
-
 
 var logger = LogManager.Setup()
     .LoadConfigurationFromAppSettings()
