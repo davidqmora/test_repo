@@ -1,9 +1,90 @@
 ﻿@page "/photoshare"
-<h3>photoshare</h3>
+@using Microsoft.Identity.Web
+@using WebUI.Model
+
+@* // Get current status for user. *@
+@* // If enabled, show "stuff". Maybe a carousel with pics. *@
+@* // If not enabled, show missing properties dialog. *@
+@* //    Upon submission, get status again. Repeat. *@
+@if (accountStatus is null)
+{
+    <MudProgressLinear Color="Color.Primary" Indeterminate="true" Size="Size.Small" />
+}
+else if (accountStatus.UserStatus == UserStatus.Enabled)
+{
+    <MudText Typo="Typo.h2">User is Enabled</MudText>
+}
+else
+{
+    <MudContainer MaxWidth="MaxWidth.Small">
+        <MudPaper Class="pa-8 mt-8">
+            <MudStack>
+                <MudText Typo="Typo.h4">We need a bit more info</MudText>
+                <MudText>Please provide the following information to enable full access to the PhotoShare feature.</MudText>
+                <UserProfileForm RequiredProperties="@accountStatus.RequiredProperties" OnTouRequested="TouRequested" OnPropertiesSubmitted="RequirePropertiesSubmitted"/>
+            </MudStack>
+        </MudPaper>
+    </MudContainer>
+}
+
+
+@inject IUserAccountService UserAccountService
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
+@inject IDialogService DialogService
 
 @code {
-    // Get current status for user.
-    // If enabled, show "stuff". Maybe a carousel with pics.
-    // If not enabled, show missing properties dialog.
-    //    Upon submission, get status again. Repeat.
+
+    private AccountStatus? accountStatus;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        await base.OnAfterRenderAsync(firstRender);
+        if (firstRender)
+        {
+            await GetAccountStatus();
+        }
+    }
+
+    [AuthorizeForScopes(ScopeKeySection = "AccountsApi:ApiReaderScope")]
+    private async Task GetAccountStatus()
+    {
+        try
+        {
+            accountStatus = await UserAccountService.GetStatus(CancellationToken.None);
+            if (accountStatus is not null)
+            {
+                if (accountStatus.UserStatus == UserStatus.Enabled)
+                {
+                    Console.WriteLine("User enabled");
+                }
+                else
+                {
+                    Console.WriteLine("User not enabled");
+                }
+
+                StateHasChanged();
+            }
+            else
+            {
+            }
+        }
+        catch (Exception e)
+        {
+            ConsentHandler.HandleException(e);
+        }
+    }
+
+    private void TouRequested()
+    {
+        DialogService.Show<TouDialog>();
+    }
+
+    private async Task RequirePropertiesSubmitted(UserProfile profile)
+    {
+        if (await UserAccountService.UpdateProfile(profile, CancellationToken.None))
+        {
+            accountStatus = await UserAccountService.GetStatus(CancellationToken.None);
+        }
+    }
+
 }
