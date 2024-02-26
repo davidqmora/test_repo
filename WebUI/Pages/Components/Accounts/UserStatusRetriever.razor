@@ -20,7 +20,7 @@
     </MudStack>
 </div>
 
-@inject ILocalAccountService LocalAccountService
+@inject IAccountApiService AccountApiService
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
 @code {
@@ -38,10 +38,10 @@
             status = null;
             StateHasChanged();
 
-            var accountStatus = await LocalAccountService.GetAccountStatus(CancellationToken.None);
+            var accountStatus = await AccountApiService.GetAccountStatus(CancellationToken.None);
             if (accountStatus is not null)
             {
-                await OnPropertiesChanged.InvokeAsync(accountStatus.RequiredProperties);
+                // await OnPropertiesChanged.InvokeAsync(accountStatus.RequiredProperties);
             }
             else
             {

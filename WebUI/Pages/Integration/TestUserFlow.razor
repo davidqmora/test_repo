@@ -26,7 +26,7 @@
 
 
 @inject NavigationManager Navigation
-@inject ILocalAccountService LocalAccountService
+@inject IAccountApiService AccountApiService
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 @inject IDialogService DialogService
 
@@ -51,9 +51,9 @@
         try
         {
             var query = useCaseSelector?.GetUseCaseQuery();
-            accountStatus = TestUser 
-                ? await LocalAccountService.GetMockAccountStatus(query, CancellationToken.None) 
-                : await LocalAccountService.GetAccountStatus(CancellationToken.None);
+            // accountStatus = TestUser 
+            //     ? await AccountApiService.GetMockAccountStatus(query, CancellationToken.None) 
+            //     : await AccountApiService.GetAccountStatus(TODO, CancellationToken.None);
                 
 
             Log("Response:");
@@ -91,7 +91,7 @@
     private async Task UpdateProfile(UserProfile userProfile)
     {
         Log("Updating profile...");
-        var response = await LocalAccountService.UpdateProfile(userProfile, CancellationToken.None);
+        var response = await AccountApiService.UpdateProfile(userProfile, CancellationToken.None);
         var submissionResponse = response.IsSuccessStatusCode ? "Accepted" : response.ReasonPhrase;
         Log("Response:");
         Log(submissionResponse);
