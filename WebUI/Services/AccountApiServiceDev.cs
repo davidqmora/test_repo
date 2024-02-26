@@ -2,7 +2,6 @@
 using System.Net.Mime;
 using System.Text;
 using System.Text.Json;
-using Microsoft.Graph.Models.TermStore;
 using Microsoft.Identity.Web;
 using WebUI.Model;
 
@@ -23,18 +22,15 @@ public class AccountApiServiceDev(ITokenAcquisition tokenAcquisition, IConfigura
         {"emails", $"/{Version}/{ProfilesRoute}/emails"},
         {"profile", $"/{Version}/{ProfilesRoute}"}
     };
+    
+    public string? AccountStatusQuery { get; set; }
 
-    private Entitlements? entitlementsSettings;
+    public string? EntitlementsQuery { get; set; }
     
 
     public Task<HttpResponseMessage> GetAccountStatus(CancellationToken cancellationToken)
     {
-        var query = string.Empty;
-        if (entitlementsSettings is not null)
-        {
-            query = GetQueryFromEntitlements();
-        }
-        return ApiGetWithQueryOperation("status", query, cancellationToken);
+        return ApiGetWithQueryOperation("status", AccountStatusQuery, cancellationToken);
     }
 
     public Task<HttpResponseMessage> GetProfileEmails(CancellationToken cancellationToken)
@@ -52,12 +48,6 @@ public class AccountApiServiceDev(ITokenAcquisition tokenAcquisition, IConfigura
          return await client.PatchAsync($"{apiBaseAddress}{endpoints["profile"]}", updateRequest, cancellationToken);
     }
 
-    public void SetEntitlements(Entitlements entitlements)
-    {
-        entitlementsSettings = entitlements;
-    }    
-    
-    
     private async Task<HttpResponseMessage> ApiGetOperation(string endpoint, CancellationToken cancellationToken)
     {
         await InitializeClient();
@@ -70,7 +60,7 @@ public class AccountApiServiceDev(ITokenAcquisition tokenAcquisition, IConfigura
         CancellationToken cancellationToken)
     {
         await InitializeClient();
-        var urlTail = query == null ? "" : $"?{query}";
+        var urlTail = string.IsNullOrWhiteSpace(query) ? "" : $"?{query}";
         return await client.GetAsync($"{apiBaseAddress}{endpoints[endpoint]}{urlTail}", cancellationToken);
     }
 
@@ -83,11 +73,5 @@ public class AccountApiServiceDev(ITokenAcquisition tokenAcquisition, IConfigura
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("IdentityHubUI", "1.0"));
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("Windows", "1234567890"));
-    }
-    
-    private string GetQueryFromEntitlements()
-    {
-        var jsonEntitlements = JsonSerializer.SerializeToElement(entitlementsSettings);
-        return string.Join("&", jsonEntitlements.EnumerateObject().Select(entitlement => $"{entitlement.Name}={entitlement.Value.GetBoolean()}"));
     }
 }
