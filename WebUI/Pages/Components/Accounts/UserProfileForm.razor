@@ -2,15 +2,23 @@
 @using Microsoft.Identity.Web
 <MudForm>
 
-    @if (RequiredProperties is { PreferredEmail: true })
+    @if (AccountStatus?.RequiredProperties is { PreferredEmail: true })
     {
-        <MudTextField T="string"
-                      @bind-Value="@userProfile.PreferredEmail"
-                      Label="Preferred Email"
-                      Required="true"
-                      RequiredError="Preferred Email is required."/>
+        <MudSelect T="string"
+                   @bind-Value="@userProfile.PreferredEmail"
+                   Label="Preferred Email"
+                   Required="true"
+                   RequiredError="Preferred Email is required.">
+            @if (AccountStatus?.AvailableEmails != null)
+            {
+                foreach (var email in AccountStatus.AvailableEmails)
+                {
+                    <MudSelectItem Value="@email">@email</MudSelectItem>        
+                }
+            }
+        </MudSelect>
     }
-    @if (RequiredProperties is { SocialHandle: true })
+    @if (AccountStatus?.RequiredProperties is { SocialHandle: true })
     {
         <MudTextField T="string"
                       @bind-Value="@userProfile.SocialHandle"
@@ -18,7 +26,7 @@
                       Required="true"
                       RequiredError="Social Handle is required."/>
     }
-    @if (RequiredProperties is { CountryOrRegion: true })
+    @if (AccountStatus?.RequiredProperties is { CountryOrRegion: true })
     {
         <MudTextField T="string"
                       @bind-Value="@userProfile.CountryOrRegion"
@@ -26,7 +34,7 @@
                       Required="true"
                       RequiredError="Country Or Region is required."/>
     }
-    @if (RequiredProperties is { AgeOfIndemnity: true })
+    @if (AccountStatus?.RequiredProperties is { AgeOfIndemnity: true })
     {
         <MudCheckBox Label="Age Of Indemnity"
                      T="bool"
@@ -35,7 +43,7 @@
                      RequiredError="Age Of Indemnity is required."
                      ValueChanged="HandleAgeOfIndemnityClick"/>
     }
-    @if (RequiredProperties is { TermsOfUseAgreement: true })
+    @if (AccountStatus?.RequiredProperties is { TermsOfUseAgreement: true })
     {
         <MudCheckBox Label="Terms Of Use Agreement"
                      T="bool"
@@ -73,7 +81,7 @@
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
 @code {
-    [Parameter] public RequiredProperties? RequiredProperties { get; set; }
+    [Parameter] public AccountStatus? AccountStatus { get; set; }
 
     [Parameter] public EventCallback OnTouRequested { get; set; }
     [Parameter] public EventCallback<UserProfile> OnPropertiesSubmitted { get; set; }
@@ -82,6 +90,16 @@
 
     private MudCheckBox<bool>? touControl;
     private MudCheckBox<bool>? aoiControl;
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (AccountStatus?.AvailableEmails?.Count == 1)
+        {
+            userProfile.PreferredEmail = AccountStatus!.AvailableEmails[0];
+        }
+    }
+
 
     [AuthorizeForScopes(ScopeKeySection = "AccountsApi:ApiWriterScope")]
     private void HandleSubmit()

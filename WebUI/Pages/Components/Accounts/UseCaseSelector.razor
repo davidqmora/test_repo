@@ -1,7 +1,9 @@
 ﻿@using System.Text.Json
 @using System.ComponentModel
 <MudStack>
-    <MudRadioGroup @bind-Value="@UserType">
+    <MudRadioGroup T="string" 
+                   Value="UserType"
+                   ValueChanged="@UserTypeChanged">
         <MudRadio Value="@("enabled")">Enabled</MudRadio>
         <MudRadio Value="@("not_enabled")">Not Enabled</MudRadio>
         <MudRadio Value="@("partially_enabled")">Partially Enabled</MudRadio>
@@ -9,27 +11,35 @@
     <MudForm Disabled="@(UserType != "partially_enabled")">
         <MudCheckBox T="bool"
                      Label="Social Handle"
-                     @bind-Value="@(missingProperties["social_handle"])"/>
+                     Value="@(missingProperties["social_handle"])"
+                     ValueChanged="@(isChecked => PropertyValueChanged("social_handle" ,isChecked))"/>
         <MudCheckBox T="bool"
                      Label="Preferred Email"
-                     @bind-Value="@(missingProperties["preferred_email"])"/>
+                     Value="@(missingProperties["preferred_email"])"
+                     ValueChanged="@(isChecked => PropertyValueChanged("preferred_email" ,isChecked))"/>
         <MudCheckBox T="bool"
                      Label="Country Region"
-                     @bind-Value="@(missingProperties["country_region"])"/>
+                     Value="@(missingProperties["country_region"])"
+                     ValueChanged="@(isChecked => PropertyValueChanged("country_region" ,isChecked))"/>
         <MudCheckBox T="bool"
                      Label="Age Of Indemnity"
-                     @bind-Value="@(missingProperties["age_indemnity"])"/>
+                     Value="@(missingProperties["age_indemnity"])"
+                     ValueChanged="@(isChecked => PropertyValueChanged("age_indemnity" ,isChecked))"/>
         <MudCheckBox T="bool"
                      Label="Terms Of Use"
-                     @bind-Value="@(missingProperties["terms_of_use"])"/>
+                     Value="@(missingProperties["terms_of_use"])"
+                     ValueChanged="@(isChecked => PropertyValueChanged("terms_of_use" ,isChecked))"/>
     </MudForm>
-    <MudNumericField Label="Email Count"
-                     @bind-Value="emailCount"
+    <MudNumericField T="int?" 
+                     Label="Email Count"
+                     Value="@emailCount"
                      Disabled="@(UserType == "enabled" || 
                                  (UserType != "not_enabled" && missingProperties["preferred_email"] == false))"
-                     />
+                     ValueChanged="EmailCountChanged"/>
 </MudStack>
 
+
+@inject IUserAccountService UserAccountService
 @code {
     private string UserType { get; set; } = "enabled";
 
@@ -44,24 +54,48 @@
 
     private int? emailCount;
 
-    public string GetUseCaseQuery()
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        SaveQuery();
+    }
+
+    private void SaveQuery()
     {
         var query = $"user_type={UserType}";
 
-        if (UserType == "partially_enabled")
+        if (UserType != "enabled")
         {
             query += $"&social_handle={missingProperties["social_handle"]}" +
                      $"&preferred_email={missingProperties["preferred_email"]}" +
                      $"&country_region={missingProperties["country_region"]}" +
                      $"&age_indemnity={missingProperties["age_indemnity"]}" +
                      $"&terms_of_use={missingProperties["terms_of_use"]}";
+
+            if (emailCount is not null)
+            {
+                query += $"&email_count={emailCount}";
+            }
         }
 
-        if (emailCount is not null)
-        {
-            query += $"&email_count={emailCount}";
-        }
+        ((UserAccountServiceDev)UserAccountService).AccountStatusQuery = query;
+    }
 
-        return query;
+    private void PropertyValueChanged(string name, bool isChecked)
+    {
+        missingProperties[name] = isChecked;
+        SaveQuery();
+    }
+
+    private void EmailCountChanged(int? newCount)
+    {
+        emailCount = newCount;
+        SaveQuery();
+    }
+
+    private void UserTypeChanged(string newType)
+    {
+        UserType = newType;
+        SaveQuery();
     }
 }
