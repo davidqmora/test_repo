@@ -17,6 +17,21 @@ public class UserAccountService(IAccountApiService accountApiService) : IUserAcc
 
         return accountStatus;
     }
+
+    public async Task<bool> UpdateProfile(UserProfile profile, CancellationToken cancellationToken)
+    {
+        var response = await accountApiService.UpdateProfile(profile, cancellationToken);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            Console.WriteLine($"Unable to submit PhotoShare profile update: {response.StatusCode} - {response.ReasonPhrase}");
+            return false;
+        }
+        
+        accountStatus!.UserStatus = UserStatus.Enabled;
+        accountStatus.RequiredProperties = null;
+        return true;
+    }
     
     private static async Task<AccountStatus?> CreateAccountStatus(HttpResponseMessage response)
     {
