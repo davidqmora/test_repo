@@ -1,7 +1,7 @@
 ﻿@using WebUI.Model
 @using Microsoft.Identity.Web
 <MudForm>
-    
+
     @if (RequiredProperties is { PreferredEmail: true })
     {
         <MudTextField T="string"
@@ -28,103 +28,77 @@
     }
     @if (RequiredProperties is { AgeOfIndemnity: true })
     {
-        <MudCheckBox @bind-Value="@userProfile.AgeOfIndemnity"
-                     Label="Age Of Indemnity"
+        <MudCheckBox Label="Age Of Indemnity"
+                     T="bool"
+                     @ref="@aoiControl"
                      Required="true"
-                     RequiredError="Age Of Indemnity is required."/>
+                     RequiredError="Age Of Indemnity is required."
+                     ValueChanged="HandleAgeOfIndemnityClick"/>
     }
     @if (RequiredProperties is { TermsOfUseAgreement: true })
     {
         <MudCheckBox Label="Terms Of Use Agreement"
                      T="bool"
-                     @ref="tosaControl"
+                     @ref="touControl"
                      Required="true"
                      RequiredError="Terms Of Use Agreement is required."
-                     CheckedChanged="@HandleAgeOfIndemnityClick"/>
+                     ValueChanged="@HandleTouClick"/>
         <MudButton Variant="Variant.Text"
                    Color="Color.Primary"
                    OnClick="@SeeTermsOfUse">
             See Terms
         </MudButton>
     }
-    @if (arePropertiesRequired)
-    {
-        <MudStack Row
-                  Spacing="4"
-                  Class="mt-4">
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Primary"
-                       DisableElevation="true"
-                       OnClick="@HandleSubmit">
-                Submit
-            </MudButton>
-            <MudButton Variant="Variant.Filled"
-                       Color="Color.Secondary"
-                       DisableElevation="true"
-                       OnClick="@HandleReset">
-                Reset
-            </MudButton>
-        </MudStack>
-    }
-    else
-    {
-        <MudText Typo="Typo.body1">
-            There are no properties required.
-        </MudText>
-    }
+
+    <MudStack Row
+              Spacing="4"
+              Class="mt-4">
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   DisableElevation="true"
+                   OnClick="@HandleSubmit">
+            Submit
+        </MudButton>
+        <MudButton Variant="Variant.Filled"
+                   Color="Color.Secondary"
+                   DisableElevation="true"
+                   OnClick="@HandleReset">
+            Reset
+        </MudButton>
+    </MudStack>
 </MudForm>
-<MudPaper>
-    @submissionResponse
-</MudPaper>
 
 
-@inject ILocalAccountService LocalAccountService
+@inject IAccountApiService AccountApiService
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 
 @code {
     [Parameter] public RequiredProperties? RequiredProperties { get; set; }
+
     [Parameter] public EventCallback OnTouRequested { get; set; }
+    [Parameter] public EventCallback<UserProfile> OnPropertiesSubmitted { get; set; }
 
     private UserProfile userProfile = new();
 
-    private string? submissionResponse;
-    private bool arePropertiesRequired;
-    private MudCheckBox<bool>? tosaControl;
+    private MudCheckBox<bool>? touControl;
+    private MudCheckBox<bool>? aoiControl;
 
-    protected override void OnParametersSet()
+    [AuthorizeForScopes(ScopeKeySection = "AccountsApi:ApiWriterScope")]
+    private void HandleSubmit()
     {
-        base.OnParametersSet();
-        if (RequiredProperties is null)
-        {
-            arePropertiesRequired = false;
-            return;
-        }
-        
-        arePropertiesRequired = RequiredProperties.PreferredEmail || RequiredProperties.SocialHandle ||
-                                RequiredProperties.CountryOrRegion || RequiredProperties.AgeOfIndemnity ||
-                                RequiredProperties.PreferredEmail || RequiredProperties.TermsOfUseAgreement;
-    }
-
-    private async Task HandleSubmit()
-    {
-        submissionResponse = null;
-        StateHasChanged();
-
-
-        var response = await LocalAccountService.UpdateProfile(userProfile, CancellationToken.None);
-        submissionResponse = response.IsSuccessStatusCode ? "Accepted" : response.ReasonPhrase;
+        OnPropertiesSubmitted.InvokeAsync(userProfile);
     }
 
     private void HandleReset()
     {
         userProfile = new UserProfile();
-        if (tosaControl != null)
+        if (touControl != null)
         {
-            tosaControl.Value = false;
+            touControl.Value = false;
         }
     }
 
-    private void HandleAgeOfIndemnityClick(bool isChecked)
+    private void HandleTouClick(bool isChecked)
     {
         userProfile.TermsOfUseAgreement = isChecked ? DateTime.Now : null;
     }
@@ -132,6 +106,11 @@
     private void SeeTermsOfUse()
     {
         OnTouRequested.InvokeAsync();
+    }
+
+    private void HandleAgeOfIndemnityClick(bool isChecked)
+    {
+        userProfile.AgeOfIndemnity = isChecked ? true : null;
     }
 
 }
