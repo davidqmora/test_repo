@@ -2,10 +2,7 @@
 @using Microsoft.Identity.Web
 @using WebUI.Model
 
-@* // Get current status for user. *@
-@* // If enabled, show "stuff". Maybe a carousel with pics. *@
-@* // If not enabled, show missing properties dialog. *@
-@* //    Upon submission, get status again. Repeat. *@
+
 @if (accountStatus is null && !usingMockServices)
 {
     <MudProgressLinear Color="Color.Primary" Indeterminate="true" Size="Size.Small"/>
@@ -53,11 +50,11 @@
     }
 </MudStack>
 
+
 @inject IUserAccountService UserAccountService
 @inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler
 @inject IDialogService DialogService
 @inject IConfiguration Configuration
-
 @code {
 
     private AccountStatus? accountStatus;
@@ -85,22 +82,7 @@
         try
         {
             accountStatus = await UserAccountService.GetStatus(CancellationToken.None);
-            if (accountStatus is not null)
-            {
-                if (accountStatus.UserStatus == UserStatus.Enabled)
-                {
-                    Console.WriteLine("User enabled");
-                }
-                else
-                {
-                    Console.WriteLine("User not enabled");
-                }
-
-                StateHasChanged();
-            }
-            else
-            {
-            }
+            StateHasChanged();
         }
         catch (Exception e)
         {
