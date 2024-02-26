@@ -4,11 +4,21 @@ namespace WebUI.Services;
 
 public static class PhotoShareServiceExtensions
 {
-    public static void AddPhotoShareServices(
-        this IServiceCollection services, IAsyncPolicy<HttpResponseMessage> retryPolicy)
+    public static void AddLocalServices(
+        this IServiceCollection services, IAsyncPolicy<HttpResponseMessage> retryPolicy, bool useMockServices = false)
     {
         services.AddHttpClient<IPhotoShareService, PhotoShareService>();
         services.AddHttpClient<ILegacyLoginService, LegacyLoginService>();
-        services.AddHttpClient<ILocalAccountService, LocalAccountService>().AddPolicyHandler(retryPolicy);
+
+        if (useMockServices)
+        {
+            services.AddHttpClient<IAccountApiService, AccountApiServiceDev>().AddPolicyHandler(retryPolicy);
+            services.AddScoped<IUserAccountService, UserAccountServiceDev>();
+        }
+        else
+        {
+            services.AddHttpClient<IAccountApiService, AccountApiService>().AddPolicyHandler(retryPolicy);
+            services.AddScoped<IUserAccountService, UserAccountService>();
+        }
     }
 }

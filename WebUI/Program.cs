@@ -55,7 +55,7 @@ WebApplication BuildApp(string[] args)
             .AddCosmosDb(configuration.GetSection("AccountsDB"))
             .Build();
     });
-    services.AddLocalServices(GetRetryPolicy());
+    services.AddLocalServices(GetRetryPolicy(), useMockServices: true);
 
     services.AddOptions();
     
