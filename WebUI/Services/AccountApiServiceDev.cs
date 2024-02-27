@@ -18,34 +18,34 @@ public class AccountApiServiceDev(ITokenAcquisition tokenAcquisition, IConfigura
 
     private readonly Dictionary<string, string> endpoints = new()
     {
-        {"status", $"/{Version}/{AccountsRoute}/status-dev"},
-        {"emails", $"/{Version}/{ProfilesRoute}/emails"},
-        {"profile", $"/{Version}/{ProfilesRoute}"}
+        { "status", $"/{Version}/{AccountsRoute}/status-dev" },
+        { "entitlements", $"/{Version}/{ProfilesRoute}/entitlements-dev" },
+        { "profile", $"/{Version}/{ProfilesRoute}" }
     };
-    
+
     public string? AccountStatusQuery { get; set; }
 
     public string? EntitlementsQuery { get; set; }
-    
+
 
     public Task<HttpResponseMessage> GetAccountStatus(CancellationToken cancellationToken)
     {
         return ApiGetWithQueryOperation("status", AccountStatusQuery, cancellationToken);
     }
 
-    public Task<HttpResponseMessage> GetProfileEmails(CancellationToken cancellationToken)
-    {
-        return ApiGetOperation("emails", cancellationToken);
-    }
-
     public async Task<HttpResponseMessage> UpdateProfile(UserProfile profile, CancellationToken cancellationToken)
     {
-         await InitializeClient();
+        await InitializeClient();
 
-         var serializedProfile = JsonSerializer.Serialize(profile);
-         var updateRequest = new StringContent(serializedProfile, Encoding.UTF8, MediaTypeNames.Application.Json);
+        var serializedProfile = JsonSerializer.Serialize(profile);
+        var updateRequest = new StringContent(serializedProfile, Encoding.UTF8, MediaTypeNames.Application.Json);
 
-         return await client.PatchAsync($"{apiBaseAddress}{endpoints["profile"]}", updateRequest, cancellationToken);
+        return await client.PatchAsync($"{apiBaseAddress}{endpoints["profile"]}", updateRequest, cancellationToken);
+    }
+
+    public Task<HttpResponseMessage> GetEntitlements(CancellationToken cancellationToken)
+    {
+        return ApiGetWithQueryOperation("entitlements", EntitlementsQuery, cancellationToken);
     }
 
     private async Task<HttpResponseMessage> ApiGetOperation(string endpoint, CancellationToken cancellationToken)
@@ -68,7 +68,7 @@ public class AccountApiServiceDev(ITokenAcquisition tokenAcquisition, IConfigura
     {
         var scopes = new[] { apiReadScope };
         var accessToken = await tokenAcquisition.GetAccessTokenForUserAsync(scopes);
-        
+
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
         client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue("IdentityHubUI", "1.0"));

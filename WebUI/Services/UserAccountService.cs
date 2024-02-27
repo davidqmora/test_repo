@@ -6,6 +6,10 @@ namespace WebUI.Services;
 public class UserAccountService(IAccountApiService accountApiService) : IUserAccountService
 {
     private AccountStatus? accountStatus;
+    private readonly Entitlements entitlements = new();
+    
+    private bool firstEntitlementsQuery = true;
+
     
     public async Task<AccountStatus?> GetStatus(CancellationToken cancellationToken)
     {
@@ -31,6 +35,18 @@ public class UserAccountService(IAccountApiService accountApiService) : IUserAcc
         accountStatus!.UserStatus = UserStatus.Enabled;
         accountStatus.RequiredProperties = null;
         return true;
+    }
+
+    public async Task<Entitlements> GetEntitlements(CancellationToken cancellationToken)
+    {
+        if (firstEntitlementsQuery)
+        {
+            var response = await accountApiService.GetEntitlements(cancellationToken);
+            await ParseEntitlements(response);
+            firstEntitlementsQuery = false;
+        }
+
+        return entitlements;
     }
     
     private static async Task<AccountStatus?> CreateAccountStatus(HttpResponseMessage response)
@@ -62,5 +78,16 @@ public class UserAccountService(IAccountApiService accountApiService) : IUserAcc
         }
         
         return accountStatus;
+    }
+
+    private async Task ParseEntitlements(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode) return;
+
+        var entitlementsResponse = await response.Content.ReadAsStringAsync();
+
+        entitlements.Investor = entitlementsResponse.Contains("investor");
+        entitlements.FoodTruck = entitlementsResponse.Contains("food_truck");
+        entitlements.PhotoShare = entitlementsResponse.Contains("photo_share");
     }
 }

@@ -19,19 +19,13 @@ public class AccountApiService(ITokenAcquisition tokenAcquisition, IConfiguratio
     private readonly Dictionary<string, string> endpoints = new()
     {
         {"status", $"/{Version}/{AccountsRoute}/status"},
-        {"status-dev", $"/{Version}/{AccountsRoute}/status-dev"},
-        {"emails", $"/{Version}/{ProfilesRoute}/emails"},
+        {"entitlements", $"/{Version}/{ProfilesRoute}/entitlements"},
         {"profile", $"/{Version}/{ProfilesRoute}"}
     };
 
     public Task<HttpResponseMessage> GetAccountStatus(CancellationToken cancellationToken)
     {
         return ApiGetOperation("status", cancellationToken);
-    }
-
-    public Task<HttpResponseMessage> GetProfileEmails(CancellationToken cancellationToken)
-    {
-        return ApiGetOperation("emails", cancellationToken);
     }
 
     public async Task<HttpResponseMessage> UpdateProfile(UserProfile profile, CancellationToken cancellationToken)
@@ -44,29 +38,17 @@ public class AccountApiService(ITokenAcquisition tokenAcquisition, IConfiguratio
          return await client.PatchAsync($"{apiBaseAddress}{endpoints["profile"]}", updateRequest, cancellationToken);
     }
 
-    // public async Task<AccountStatus?> GetMockAccountStatus(string? query, CancellationToken cancellationToken)
-    // {
-    //     var response = await ApiGetWithQueryOperation("status-dev", query, cancellationToken);
-    //     return await CreateAccountStatus(response);
-    // }
-
+    public Task<HttpResponseMessage> GetEntitlements(CancellationToken cancellationToken)
+    {
+        return ApiGetOperation("entitlements", cancellationToken);
+    }
 
     private async Task<HttpResponseMessage> ApiGetOperation(string endpoint, CancellationToken cancellationToken)
     {
         await InitializeClient();
         return await client.GetAsync($"{apiBaseAddress}{endpoints[endpoint]}", cancellationToken);
     }
-
-    private async Task<HttpResponseMessage> ApiGetWithQueryOperation(
-        string endpoint,
-        string? query,
-        CancellationToken cancellationToken)
-    {
-        await InitializeClient();
-        var urlTail = query == null ? "" : $"?{query}";
-        return await client.GetAsync($"{apiBaseAddress}{endpoints[endpoint]}{urlTail}", cancellationToken);
-    }
-
+    
     private async Task InitializeClient()
     {
         var scopes = new[] { apiReadScope };

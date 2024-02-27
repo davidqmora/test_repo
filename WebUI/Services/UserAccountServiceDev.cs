@@ -1,5 +1,4 @@
-﻿using System.Collections.ObjectModel;
-using System.Text.Json;
+﻿using System.Text.Json;
 using WebUI.Model;
 
 namespace WebUI.Services;
@@ -7,14 +6,21 @@ namespace WebUI.Services;
 public class UserAccountServiceDev(IAccountApiService accountApiService) : IUserAccountService
 {
     private AccountStatus? accountStatus;
+    private readonly Entitlements entitlements = new();
+
+    private bool firstEntitlementsQuery = true;
     
     public string? AccountStatusQuery { get; set; }
+    public string? EntitlementsQuery { get; set; }
 
     public async Task<AccountStatus?> GetStatus(CancellationToken cancellationToken)
     {
-        ((AccountApiServiceDev)accountApiService).AccountStatusQuery = AccountStatusQuery;
-        var response = await accountApiService.GetAccountStatus(cancellationToken);
-        accountStatus =  await CreateAccountStatus(response);
+        if (accountStatus is null)
+        {
+            ((AccountApiServiceDev)accountApiService).AccountStatusQuery = AccountStatusQuery;
+            var response = await accountApiService.GetAccountStatus(cancellationToken);
+            accountStatus = await CreateAccountStatus(response);
+        }
 
         return accountStatus;
     }
@@ -24,13 +30,23 @@ public class UserAccountServiceDev(IAccountApiService accountApiService) : IUser
         throw new NotImplementedException();
     }
 
-    private static async Task<AccountStatus?> CreateAccountStatus(HttpResponseMessage response)
+    public async Task<Entitlements> GetEntitlements(CancellationToken cancellationToken)
     {
-        if (!response.IsSuccessStatusCode)
+        if (firstEntitlementsQuery)
         {
-            return null;
+            ((AccountApiServiceDev)accountApiService).EntitlementsQuery = EntitlementsQuery;
+            var response = await accountApiService.GetEntitlements(cancellationToken);
+            await ParseEntitlements(response);
+            firstEntitlementsQuery = false;
         }
 
+        return entitlements;
+    }   
+
+    private static async Task<AccountStatus?> CreateAccountStatus(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode) return null;
+        
         var jsonContent = await response.Content.ReadAsStringAsync();
 
         var accountStatus = new AccountStatus();
@@ -53,5 +69,16 @@ public class UserAccountServiceDev(IAccountApiService accountApiService) : IUser
         }
 
         return accountStatus;
+    }
+    
+    private async Task ParseEntitlements(HttpResponseMessage response)
+    {
+        if (!response.IsSuccessStatusCode) return;
+
+        var entitlementsResponse = await response.Content.ReadAsStringAsync();
+
+        entitlements.Investor = entitlementsResponse.Contains("investor");
+        entitlements.FoodTruck = entitlementsResponse.Contains("food_truck");
+        entitlements.PhotoShare = entitlementsResponse.Contains("photo_share");
     }
 }

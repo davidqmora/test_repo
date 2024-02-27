@@ -6,4 +6,5 @@ public interface IUserAccountService
 {
     Task<AccountStatus?> GetStatus(CancellationToken cancellationToken);
     Task<bool> UpdateProfile(UserProfile profile, CancellationToken cancellationToken);
+    Task<Entitlements> GetEntitlements(CancellationToken cancellationToken);
 }
