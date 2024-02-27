@@ -1,12 +1,10 @@
-using System.Net;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.Identity.Web;
 using Microsoft.Identity.Web.UI;
 using MudBlazor.Services;
 using NLog;
 using NLog.Web;
-using MyRadar.Accounts;using Polly;
-using Polly.Extensions.Http;
+using MyRadar.Accounts;
 using WebUI.Services;
 
 WebApplication BuildApp(string[] args)

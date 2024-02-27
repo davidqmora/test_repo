@@ -7,8 +7,13 @@
 
 <MudLayout>
     <MudAppBar Elevation="0" Style="z-index: unset !important;">
-        <MudText Typo="Typo.h4">Identity Hub Portal</MudText>
-        <AuthorizedNavMenu/>
+        <MudStack row>
+            <MudNavLink Href="/portal">
+                <MudText Typo="Typo.h4">Identity Hub Portal</MudText>
+            </MudNavLink>
+            <AuthorizedNavMenu/>
+            <MudSpacer/>
+        </MudStack>
         <MudSpacer/>
         <LoginDisplay/>
     </MudAppBar>

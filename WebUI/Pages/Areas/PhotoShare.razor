@@ -17,12 +17,16 @@
     }
     else if (accountStatus.UserStatus == UserStatus.Enabled)
     {
-        <MudText Typo="Typo.h2">User is Enabled</MudText>
+        <MudText Typo="Typo.h2"
+                 Class="pa-6">
+            User is Enabled
+        </MudText>
     }
     else
     {
-        <MudContainer MaxWidth="MaxWidth.Small">
-            <MudPaper Class="pa-8 mt-8">
+        <MudContainer MaxWidth="MaxWidth.Small"
+                      Class="pa-4">
+            <MudPaper Class="pa-8">
                 <MudStack>
                     <MudText Typo="Typo.h4">We need a bit more info</MudText>
                     <MudText>Please provide the following information to enable full access to the PhotoShare feature.</MudText>
