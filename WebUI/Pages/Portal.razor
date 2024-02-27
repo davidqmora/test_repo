@@ -1,6 +1,39 @@
 ﻿@page "/portal"
-<h3>Portal</h3>
+@using Microsoft.Identity.Web
+@using System.Text.Json
+
+<MudText Typo="Typo.h3"
+         Class="py-4 px-2">
+    User Portal
+</MudText>
+
+<MudStack Class="pa-2">
+    <EntitlementsSelector/>
+</MudStack>
+
+@inject IUserAccountService UserAccountService
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler 
 
 @code {
-    
+
+    private async Task OnGetEntitlements()
+    {
+        await GetUserEntitlements();
+    }
+
+    [AuthorizeForScopes(ScopeKeySection = "AccountsApi:ApiReaderScope")]
+    private async Task GetUserEntitlements()
+    {
+        try
+        {
+            var entitlements = await UserAccountService.GetEntitlements(CancellationToken.None);
+            var entitlementsAsString = JsonSerializer.Serialize(entitlements);
+            Console.WriteLine(entitlementsAsString);
+        }
+        catch (Exception e)
+        {
+            ConsentHandler.HandleException(e);
+        }
+    }
+
 }

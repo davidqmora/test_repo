@@ -1,13 +1,66 @@
-﻿<MudToolBar>
+﻿@using Microsoft.Identity.Web
+@using WebUI.Model
+<MudToolBar>
     <AuthorizeView>
         <Authorized>
-            <MudNavLink Href="/photoshare" Match="NavLinkMatch.All">PhotoShare</MudNavLink>
-            <MudNavLink Href="/investor">Investor</MudNavLink>
-            <MudNavLink Href="/foodtruck">Food&nbsp;Truck</MudNavLink>
+            @if (entitlements is { PhotoShare: true })
+            {
+                <MudNavLink Href="/photoshare">PhotoShare</MudNavLink>
+            }
+            @if (entitlements is { Investor: true })
+            {
+                <MudNavLink Href="/investor">Investor</MudNavLink>
+            }
+            @if (entitlements is { FoodTruck: true })
+            {
+                <MudNavLink Href="/foodtruck">Food&nbsp;Truck</MudNavLink>
+            }
         </Authorized>
     </AuthorizeView>
 </MudToolBar>
 
+
+@inject IUserAccountService UserAccountService
+@inject MicrosoftIdentityConsentAndConditionalAccessHandler ConsentHandler 
+
 @code {
+    [CascadingParameter] private Task<AuthenticationState>? AuthenticationState { get; set; }
+
+    private Entitlements? entitlements;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        
+        if (AuthenticationState is not null)
+        {
+            var authState = await AuthenticationState;
+            var user = authState.User;
+            if (user.Identity is { IsAuthenticated: true })
+            {
+                Console.WriteLine("User authenticated. Getting entitlements.");
+                await GetUserEntitlements();
+            }
+            else
+            {
+                Console.WriteLine("User not authenticated.");
+            }
+        }
+
+        StateHasChanged();
+    }
+
+    [AuthorizeForScopes(ScopeKeySection = "AccountsApi:ApiReaderScope")]
+    private async Task GetUserEntitlements()
+    {
+        try
+        {
+            entitlements = await UserAccountService.GetEntitlements(CancellationToken.None);
+        }
+        catch (Exception e)
+        {
+            ConsentHandler.HandleException(e);
+        }
+    }
 
 }
