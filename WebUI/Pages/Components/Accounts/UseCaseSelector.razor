@@ -1,5 +1,6 @@
 ﻿@using System.Text.Json
 @using System.ComponentModel
+
 <MudStack>
     <MudRadioGroup T="string" 
                    Value="UserType"
@@ -39,7 +40,7 @@
 </MudStack>
 
 
-@inject IUserAccountService UserAccountService
+@inject LocalStore LocalStore
 @code {
     private string UserType { get; set; } = "enabled";
 
@@ -78,7 +79,7 @@
             }
         }
 
-        ((UserAccountServiceDev)UserAccountService).AccountStatusQuery = query;
+        LocalStore.AccountStatusQuery = query;
     }
 
     private void PropertyValueChanged(string name, bool isChecked)

@@ -6,18 +6,12 @@ namespace WebUI.Services;
 public class UserAccountServiceDev(IAccountApiService accountApiService) : IUserAccountService
 {
     private AccountStatus? accountStatus;
-    private readonly Entitlements entitlements = new();
-
-    private bool firstEntitlementsQuery = true;
-    
-    public string? AccountStatusQuery { get; set; }
-    public string? EntitlementsQuery { get; set; }
+    private Entitlements? entitlements;
 
     public async Task<AccountStatus?> GetStatus(CancellationToken cancellationToken)
     {
         if (accountStatus is null)
         {
-            ((AccountApiServiceDev)accountApiService).AccountStatusQuery = AccountStatusQuery;
             var response = await accountApiService.GetAccountStatus(cancellationToken);
             accountStatus = await CreateAccountStatus(response);
         }
@@ -30,14 +24,12 @@ public class UserAccountServiceDev(IAccountApiService accountApiService) : IUser
         throw new NotImplementedException();
     }
 
-    public async Task<Entitlements> GetEntitlements(CancellationToken cancellationToken)
+    public async Task<Entitlements?> GetEntitlements(CancellationToken cancellationToken)
     {
-        if (firstEntitlementsQuery)
+        if (entitlements is null)
         {
-            ((AccountApiServiceDev)accountApiService).EntitlementsQuery = EntitlementsQuery;
             var response = await accountApiService.GetEntitlements(cancellationToken);
             await ParseEntitlements(response);
-            firstEntitlementsQuery = false;
         }
 
         return entitlements;
@@ -77,6 +69,11 @@ public class UserAccountServiceDev(IAccountApiService accountApiService) : IUser
 
         var entitlementsResponse = await response.Content.ReadAsStringAsync();
 
+        if (entitlements is null)
+        {
+            entitlements = new Entitlements();
+        }
+        
         entitlements.Investor = entitlementsResponse.Contains("investor");
         entitlements.FoodTruck = entitlementsResponse.Contains("food_truck");
         entitlements.PhotoShare = entitlementsResponse.Contains("photo_share");

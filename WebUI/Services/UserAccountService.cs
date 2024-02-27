@@ -37,7 +37,7 @@ public class UserAccountService(IAccountApiService accountApiService) : IUserAcc
         return true;
     }
 
-    public async Task<Entitlements> GetEntitlements(CancellationToken cancellationToken)
+    public async Task<Entitlements?> GetEntitlements(CancellationToken cancellationToken)
     {
         if (firstEntitlementsQuery)
         {

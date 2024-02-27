@@ -16,6 +16,7 @@ public static class PhotoShareServiceExtensions
         
         if (useMockServices)
         {
+            services.AddSingleton<LocalStore>();
             services.AddHttpClient<IAccountApiService, AccountApiServiceDev>().AddPolicyHandler(GetRetryPolicy());
             services.AddScoped<IUserAccountService, UserAccountServiceDev>();
         }

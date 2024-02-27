@@ -7,7 +7,7 @@ using WebUI.Model;
 
 namespace WebUI.Services;
 
-public class AccountApiServiceDev(ITokenAcquisition tokenAcquisition, IConfiguration configuration, HttpClient client) : IAccountApiService
+public class AccountApiServiceDev(LocalStore localStore, ITokenAcquisition tokenAcquisition, IConfiguration configuration, HttpClient client) : IAccountApiService
 {
     private readonly string apiReadScope = configuration["AccountsApi:ApiReaderScope"] ?? "";
     private readonly string apiBaseAddress = configuration["AccountsApi:BaseAddress"] ?? "";
@@ -19,18 +19,14 @@ public class AccountApiServiceDev(ITokenAcquisition tokenAcquisition, IConfigura
     private readonly Dictionary<string, string> endpoints = new()
     {
         { "status", $"/{Version}/{AccountsRoute}/status-dev" },
-        { "entitlements", $"/{Version}/{ProfilesRoute}/entitlements-dev" },
+        { "entitlements", $"/{Version}/{AccountsRoute}/entitlements-dev" },
         { "profile", $"/{Version}/{ProfilesRoute}" }
     };
-
-    public string? AccountStatusQuery { get; set; }
-
-    public string? EntitlementsQuery { get; set; }
 
 
     public Task<HttpResponseMessage> GetAccountStatus(CancellationToken cancellationToken)
     {
-        return ApiGetWithQueryOperation("status", AccountStatusQuery, cancellationToken);
+        return ApiGetWithQueryOperation("status", localStore.AccountStatusQuery, cancellationToken);
     }
 
     public async Task<HttpResponseMessage> UpdateProfile(UserProfile profile, CancellationToken cancellationToken)
@@ -45,7 +41,7 @@ public class AccountApiServiceDev(ITokenAcquisition tokenAcquisition, IConfigura
 
     public Task<HttpResponseMessage> GetEntitlements(CancellationToken cancellationToken)
     {
-        return ApiGetWithQueryOperation("entitlements", EntitlementsQuery, cancellationToken);
+        return ApiGetWithQueryOperation("entitlements", localStore.EntitlementsQuery, cancellationToken);
     }
 
     private async Task<HttpResponseMessage> ApiGetOperation(string endpoint, CancellationToken cancellationToken)

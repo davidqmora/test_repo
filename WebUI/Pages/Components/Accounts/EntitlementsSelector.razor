@@ -1,0 +1,64 @@
+@using WebUI.Model
+@using System.Text.Json
+@using MoreLinq
+
+<MudStack row>
+    <MudCheckBox T="bool"
+                 Label="PhotoShare"
+                 Value="@entitlementsSpec.PhotoShare"
+                 ValueChanged="@(isChecked => PropertyValueChanged("photo_share", isChecked))"/>
+    <MudCheckBox T="bool"
+                 Label="Investor"
+                 Value="@entitlementsSpec.Investor"
+                 ValueChanged="@(isChecked => PropertyValueChanged("investor", isChecked))"/>
+    <MudCheckBox T="bool"
+                 Label="Food Truck"
+                 Value="@entitlementsSpec.FoodTruck"
+                 ValueChanged="@(isChecked => PropertyValueChanged("food_truck", isChecked))"/>
+</MudStack>
+
+@inject LocalStore LocalStore
+
+@code {
+    private Entitlements entitlementsSpec = new();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        if (LocalStore.EntitlementsSpec is not null)
+        {
+            entitlementsSpec = LocalStore.EntitlementsSpec;
+        }
+
+        SaveQuery();
+    }
+
+    private void SaveQuery()
+    {
+        var query = $"&photo_share={entitlementsSpec.PhotoShare}" +
+                    $"&investor={entitlementsSpec.Investor}" +
+                    $"&food_truck={entitlementsSpec.FoodTruck}";
+
+        LocalStore.EntitlementsSpec = entitlementsSpec;
+        LocalStore.EntitlementsQuery = query;
+    }
+
+    private void PropertyValueChanged(string propertyName, bool isChecked)
+    {
+        switch (propertyName)
+        {
+            case "photo_share":
+                entitlementsSpec.PhotoShare = isChecked;
+                break;
+            case "investor":
+                entitlementsSpec.Investor = isChecked;
+                break;
+            case "food_truck":
+                entitlementsSpec.FoodTruck = isChecked;
+                break;
+        }
+
+        SaveQuery();
+    }
+
+}
